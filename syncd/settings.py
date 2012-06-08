@@ -2,7 +2,7 @@ from datetime import timedelta
 
 
 USERS = {}  # lan usernames and passwords (<username>: <password>)
-DEFAULT_RSYNC_ARGS = '-a --ignore-errors'
+DEFAULT_RSYNC_ARGS = ['-a', '--ignore-errors']
 SYNC_TIMEOUT = 7200     # seconds
 AUTOMOUNT_UUID_DEV = True
 

@@ -283,12 +283,18 @@ class Sync(dotdict):
         return True
 
     def _get_cmd(self):
-        exclusions = ' '.join(['--exclude=%s' % e for e in self.exclusions])
-        args = '%s%s' % (DEFAULT_RSYNC_ARGS, ' %s' % exclusions or '')
+        cmd = ['rsync']
+        if self.sudo:
+            cmd.insert(0, 'sudo')
+        if DEFAULT_RSYNC_ARGS:
+            cmd += DEFAULT_RSYNC_ARGS
+        if self.get('exclusions'):
+            cmd += ['--exclude=%s' % e for e in self.exclusions]
         if self.get('delete'):
-            args += ' --delete-excluded' if exclusions else ' --delete'
+            cmd.append('--delete-excluded' if self.exclusions else '--delete')
+        cmd += [self.src_path, self.dst_path]
 
-        return '%srsync %s %s %s' % ('sudo ' if self.sudo else '', args, self.src_path, self.dst_path)
+        return ' '.join(cmd)
 
     @timeout(SYNC_TIMEOUT)
     def process(self):
@@ -300,15 +306,15 @@ class Sync(dotdict):
         started = datetime.utcnow()
         stdout, return_code = self.callable(cmd, passwords=self.passwords, timeout=SYNC_TIMEOUT)
         if return_code in (0, 23, 24):
-            self.update(processing=False, processed=datetime.utcnow(), log='\n'.join(stdout[-2:]))
+            self.update(processing=False, processed=datetime.utcnow(), log='\n'.join(stdout))
             logger.info('synced %s with %s in %s', self.s_src.path_str, self.s_dst.path_str, datetime.utcnow() - started)
         else:
-            self.update(processing=False, log='\n'.join(stdout[-2:]))
-            logger.error('failed to sync %s with %s (cmd: %s): %s', self.s_src.path_str, self.s_dst.path_str, cmd, stdout[-2:])
+            self.update(processing=False, log='\n'.join(stdout))
+            logger.error('failed to sync %s with %s (cmd: %s): %s', self.s_src.path_str, self.s_dst.path_str, cmd, stdout)
 
     def update(self, **info):
         self.db[COL_SYNCS].update({'_id': self._id}, {'$set': info}, safe=True)
-        if 'log' in info:
+        if info.get('log'):
             logger.info(info['log'])
 
 
