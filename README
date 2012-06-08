@@ -1,0 +1,14 @@
+Automated rsync wrapper and web UI.
+
+
+Additional host parameters:
+- username: find a host by username
+- hwaddr: find a host by mac address
+- uuid: find a host by partition uuid (the path attribute is then relative to the uuid partition path)
+
+
+Start the daemon:
+./syncd/syncd.py
+
+Start the webui:
+./run.py

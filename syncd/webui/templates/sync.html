@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='sync.js') }}" type="text/javascript"></script>
+{% endblock %}
+
+{% block content %}
+<div class="content_form">
+    <form>
+        <h2>Add a sync</h2>
+        <table>
+            <tr>
+                {% for caption, type in [('Source', 'src'), ('Destination', 'dst')] %}
+                    <td>
+                        <h3>{{ caption }}:</h3>
+                        <table>
+                            {% for val in ['username', 'hwaddr', 'uuid', 'path'] %}
+                                <tr>
+                                    <td class="details_title"><b>{{ val }}:</b></td>
+                                    <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="" /><br></td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </td>
+                {% endfor %}
+            </tr>
+        <table>
+
+        <h3>Options:</h3>
+        <table>
+            <tr>
+                <td class="details_title">exclusions:</td>
+                <td><input type="text" name="exclusions" size="40" value="" /></td>
+            </tr>
+            <tr>
+                <td class="details_title">delete:</td>
+                <td><input type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
+            </tr>
+            <tr>
+                <td class="details_title">recurrence:</td>
+                <td>
+                    <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="12" />
+                </td>
+            </tr>
+            <tr>
+                <td class="details_title">time range:</td>
+                <td>
+                    <input type="number" name="hour_start" title="hour before which the sync cant start" size="2" min="-1" max="23" value="-1" /> to
+                    <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="-1" />
+                </td>
+            </tr>
+
+        </table>
+
+        <br>
+        <button class="button" type="submit" value="add">add</button>
+
+    </form>
+</div>
+
+{% for item in items %}
+    <div class="content_element">
+        <form>
+            <input type="hidden" name="id" value="{{ item._id }}" />
+
+            <div class="element_name">
+                <table>
+                    <tr>
+                        <td class="title">
+                            <b>{{ item.src_str }} to {{ item.dst_str }}{% if item.processing %} (running){% endif %}</b>
+                        </td>
+                        <td style="width: 300px;">
+                            {% if item.processed %}
+                                processed {{ item.processed }}
+                            {% endif%}
+                        </td>
+                        <td class="td_button">
+                            <a href=""><img class="img_button" src="{{ url_for('static', filename='edit.png') }}" alt="edit"></img></a>
+                        </td>
+                        <td class="td_button">
+                            <a href=""><img class="img_button" src="{{ url_for('static', filename='save.png') }}" alt="save"></img></a>
+                        </td>
+                        <td class="td_button status">
+                            <a href=""><img class="img_button" src="{{ url_for('static', filename='reset.png') }}" alt="reset"></img></a>
+                        </td>
+                        <td class="td_button">
+                            <a href=""><img class="img_button" src="{{ url_for('static', filename='remove.png') }}" alt="remove"></img></a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="element_edit" style="display: none;">
+
+                <table>
+                    <tr>
+                        {% for caption, type in [('Source', 'src'), ('Destination', 'dst')] %}
+                            <td>
+                                <h3>{{ caption }}:</h3>
+                                <table>
+                                    {% for val in ['username', 'hwaddr', 'uuid', 'path'] %}
+                                        <tr>
+                                            <td class="details_title"><b>{{ val }}:</b></td>
+                                            <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="{{ item[type][val] }}" /><br></td>
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                <table>
+
+                <h3>Options:</h3>
+                <table>
+                    <tr>
+                        <td class="details_title">exclusions:</td>
+                        <td><input type="text" name="exclusions" size="40" value="{{ item.exclusions|join(', ') }}" /></td>
+                    </tr>
+                    <tr>
+                        <td class="details_title">delete:</td>
+                        <td><input type="checkbox" name="delete"{% if item.delete %} checked="checked"{% endif %} title="delete removed files at destination" /></td>
+                    </tr>
+                    <tr>
+                        <td class="details_title">recurrence:</td>
+                        <td>
+                            <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="{{ item.recurrence }}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="details_title">time range:</td>
+                        <td>
+                            <input type="number" name="hour_start" title="hour before which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_start %}{{ item.hour_start }}{% else %}-1{% endif %}" /> to
+                            <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_end %}{{ item.hour_end }}{% else %}-1{% endif %}" />
+                        </td>
+                    </tr>
+                </table>
+
+                <h3>Log:</h3>
+                <pre>{{ item.log }}</pre>
+
+            </div>
+
+        </form>
+    </div>
+{% endfor %}
+
+{% endblock %}
