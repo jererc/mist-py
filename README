@@ -1,10 +1,14 @@
 Automated rsync wrapper and web UI.
 
 
-Additional host parameters:
-- username: find a host by username
-- hwaddr: find a host by mac address
-- uuid: find a host by partition uuid (the path attribute is then relative to the uuid partition path)
+Features:
+
+- synchronize paths between hosts
+- allow both remote source and destination
+- discover lan hosts
+- find hosts from a username or a partition uuid or a mac address
+- mount partitions
+- create destination path
 
 
 Start the daemon:
