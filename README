@@ -5,14 +5,14 @@ Features:
 
 - synchronize paths between hosts
 - allow both remote source and destination
-- discover lan hosts
+- discover lan hosts and partitions
 - find hosts from a username or a partition uuid or a mac address
 - mount partitions
 - create destination path
 
 
 Start the daemon:
-./syncd/syncd.py
+./syncd/run.py
 
 Start the webui:
 ./run.py

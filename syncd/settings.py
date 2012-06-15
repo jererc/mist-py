@@ -2,7 +2,7 @@ from datetime import timedelta
 
 
 USERS = {}  # lan usernames and passwords (<username>: <password>)
-DEFAULT_RSYNC_ARGS = ['-a', '--ignore-errors']
+DEFAULT_RSYNC_ARGS = ['-ax', '--ignore-errors']
 SYNC_TIMEOUT = 7200     # seconds
 AUTOMOUNT_UUID_DEV = True
 
@@ -11,14 +11,21 @@ AUTOMOUNT_UUID_DEV = True
 DB_NAME = 'syncd'
 COL_SYNCS = 'syncs'
 COL_HOSTS = 'hosts'
-COL_NOTFOUND = 'hosts_not_found'
+COL_FAILED = 'failed'
 
 
-USERNAME_TRIES = 3
-NOTFOUND_DELTA = timedelta(days=4)
-TTL_HOST = timedelta(days=7)
-TTL_HOST_INFO = timedelta(seconds=120)
-TTL_FAILED_USERNAME = timedelta(hours=12)
+USERNAME_ATTEMPTS = 3
+DELTA_HOST = timedelta(days=7)
+DELTA_FAILED_PARAMS = timedelta(days=4)
+DELTA_FAILED_USERNAME = timedelta(hours=12)
+
+
+# Logging
+LOG_FORMAT = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+LOG_DEFAULT = '/home/user/log/syncd.log'
+LOG_ERRORS = '/home/user/log/syncd-errors.log'
+LOG_SIZE = 100000   # Bytes
+LOG_COUNT = 100
 
 
 # Import local settings
