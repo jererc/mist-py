@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for item in items %}
+    <div class="content_element">
+        <h2>{{ item.host }}{% if item.hostname %} ({{ item.hostname }}){% endif %}</h2>
+
+        <table>
+
+            {% for title, key in [('Users', 'users'), ('MAC address', 'hwaddr')] %}
+                {% if item[key] %}
+                    <tr>
+                        <td class="details_title"><b>{{ title }}:</b></td>
+                        <td>{{ item[key] }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+
+            {% if item.disks %}
+                <tr><td class="details_title" colspan=3><b>Disks:</b></td></tr>
+
+                {% for info in item.disks %}
+                    <tr style="height: 10px;"></tr>
+
+                    {% for key, val in info|dictsort %}
+                        <tr>
+                            <td class="details_title2"><b>{{ key }}:</b></td>
+                            <td>{{ val }}</td>
+                        </tr>
+                    {% endfor %}
+
+
+                {% endfor %}
+
+            {% endif %}
+
+        </table>
+
+    </div>
+{% endfor %}
+
+{% endblock %}

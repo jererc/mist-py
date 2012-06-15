@@ -1,18 +1,28 @@
-$(function() {
-    $('.button').bind('click', function() {
-        var action = this.value;
-        var div = $(this).parents('.content_element')[0];
-        var form = $(this).parents('form').serializeArray();
-        // Add the submit button value
-        form.push({'name': 'action', 'value': action});
+function updateStatus() {
+    $('.content_element').each( function(result) {
+        var title = $(this).find('.title');
 
-        $.getJSON($SCRIPT_ROOT + '/action',
-            form,
+        $.getJSON($SCRIPT_ROOT + '/syncs/status',
+            {id: $(this).find('input[name="id"]').val()},
             function(data) {
-                location.reload();
+
+                if (data.result == 'processing') {
+                    title.css('color', 'green');
+                    }
+                else if (data.result == 'failed') {
+                    title.css('color', 'red');
+                    }
+                else {
+                    title.css('color', '#bbb');
+                    }
+
                 });
-        return false;
         });
+    };
+
+$(function() {
+    updateStatus();
+    status_interval = window.setInterval(updateStatus, 5000);
     });
 
 $(function() {
@@ -27,7 +37,7 @@ $(function() {
             $(div).find('.element_edit').fadeToggle();
             }
         else {
-            $.getJSON($SCRIPT_ROOT + '/action',
+            $.getJSON($SCRIPT_ROOT + '/syncs/action',
                 form,
                 function(data) {
                     if (data.result == 'remove') {

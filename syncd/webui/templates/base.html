@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>sync</title>
+    <title>syncd</title>
 
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link href="{{ url_for('static', filename='style.css') }}" media="screen" rel="stylesheet" type="text/css">
 
     {% block extra_css %}{% endblock %}
@@ -12,11 +13,17 @@
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
     </script>
+
     {% block extra_js %}{% endblock %}
 
     {{ extra_header|safe }}
 </head>
 <body>
+    <div class="menu_visible">
+        <a href="{{ url_for('add') }}">add</a><br>
+        <a href="{{ url_for('syncs') }}">syncs</a><br>
+        <a href="{{ url_for('hosts') }}">hosts</a><br>
+    </div>
     <div class="content">
         {% block content %}{% endblock %}
     </div>

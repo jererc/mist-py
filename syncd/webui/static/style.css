@@ -46,11 +46,21 @@ pre {
     white-space: -o-pre-wrap; /* Opera 7 */
     word-wrap: break-word; /* Internet Explorer 5.5+ */
     width: 100%;
-    height: 100px;
     margin: 0;
     padding: 4px;
     overflow: auto;
     font: 11px monospace;
+    }
+
+.menu_visible {
+    font: 18px sans-serif;
+    font-weight: bold;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    }
+.menu_visible a:hover {
+    color: #fff;
     }
 
 .content {
@@ -73,7 +83,11 @@ pre {
 
 .details_title {
     padding-left: 20px;
-    width: 100px;
+    width: 160px;
+    }
+.details_title2 {
+    padding-left: 40px;
+    width: 140px;
     }
 .button {
     width: 70px;

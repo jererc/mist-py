@@ -1,15 +1,24 @@
 import re
 
-from flask import jsonify, request, render_template
+from flask import jsonify, request, url_for, render_template, redirect
 
 from pymongo.objectid import ObjectId
 
-from syncd.syncd import get_db, COL_SYNCS
+from syncd.settings import COL_SYNCS, COL_HOSTS
+from syncd.util import get_db
 from syncd.webui import app
 
 
 @app.route('/')
 def index():
+    return redirect(url_for('syncs'))
+
+@app.route('/add')
+def add():
+    return render_template('add.html')
+
+@app.route('/syncs')
+def syncs():
     items = []
     for res in get_db()[COL_SYNCS].find():
         res.update({
@@ -18,10 +27,10 @@ def index():
                 })
         items.append(res)
 
-    return render_template('sync.html', items=items)
+    return render_template('syncs.html', items=items)
 
-@app.route('/action')
-def action():
+@app.route('/syncs/action')
+def syncs_action():
     action = request.args.get('action')
     exclusions = request.args.get('exclusions')
     exclusions = re.split(r'[,\s]+', exclusions) if exclusions else []
@@ -40,6 +49,9 @@ def action():
     result = action
 
     if action == 'add':
+
+        print params
+
         if _validate_params(params['src']) and _validate_params(params['dst']):
             db[COL_SYNCS].insert(params, safe=True)
 
@@ -48,7 +60,7 @@ def action():
         if id:
 
             if action == 'reset':
-                db[COL_SYNCS].update({'_id': ObjectId(id)}, {'$unset': {'processed': True}}, safe=True)
+                db[COL_SYNCS].update({'_id': ObjectId(id)}, {'$unset': {'finished': True}}, safe=True)
 
             elif action == 'remove':
                 db[COL_SYNCS].remove({'_id': ObjectId(id)})
@@ -58,6 +70,25 @@ def action():
                     db[COL_SYNCS].update({'_id': ObjectId(id)}, {'$set': params}, safe=True)
 
     return jsonify(result=result)
+
+@app.route('/syncs/status')
+def get_sync_status():
+    id = request.args.get('id')
+    res = get_db()[COL_SYNCS].find_one({'_id': ObjectId(id)})
+
+    if res.get('processing') == True:
+        result = 'processing'
+    elif res.get('success') == False:
+        result = 'failed'
+    else:
+        result = 'pending'
+
+    return jsonify(result=result)
+
+@app.route('/hosts')
+def hosts():
+    res = get_db()[COL_HOSTS].find()
+    return render_template('hosts.html', items=res)
 
 def _get_params(prefix, data):
     res = {}

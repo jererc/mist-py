@@ -1,62 +1,10 @@
 {% extends "base.html" %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='sync.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='syncs.js') }}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
-<div class="content_form">
-    <form>
-        <h2>Add a sync</h2>
-        <table>
-            <tr>
-                {% for caption, type in [('Source', 'src'), ('Destination', 'dst')] %}
-                    <td>
-                        <h3>{{ caption }}:</h3>
-                        <table>
-                            {% for val in ['username', 'hwaddr', 'uuid', 'path'] %}
-                                <tr>
-                                    <td class="details_title"><b>{{ val }}:</b></td>
-                                    <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="" /><br></td>
-                                </tr>
-                            {% endfor %}
-                        </table>
-                    </td>
-                {% endfor %}
-            </tr>
-        <table>
-
-        <h3>Options:</h3>
-        <table>
-            <tr>
-                <td class="details_title">exclusions:</td>
-                <td><input type="text" name="exclusions" size="40" value="" /></td>
-            </tr>
-            <tr>
-                <td class="details_title">delete:</td>
-                <td><input type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
-            </tr>
-            <tr>
-                <td class="details_title">recurrence:</td>
-                <td>
-                    <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="12" />
-                </td>
-            </tr>
-            <tr>
-                <td class="details_title">time range:</td>
-                <td>
-                    <input type="number" name="hour_start" title="hour before which the sync cant start" size="2" min="-1" max="23" value="-1" /> to
-                    <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="-1" />
-                </td>
-            </tr>
-
-        </table>
-
-        <br>
-        <button class="button" type="submit" value="add">add</button>
-
-    </form>
-</div>
 
 {% for item in items %}
     <div class="content_element">
@@ -67,11 +15,11 @@
                 <table>
                     <tr>
                         <td class="title">
-                            <b>{{ item.src_str }} to {{ item.dst_str }}{% if item.processing %} (running){% endif %}</b>
+                            <h2>{{ item.src_str }} to {{ item.dst_str }}</h2>
                         </td>
-                        <td style="width: 300px;">
-                            {% if item.processed %}
-                                processed {{ item.processed }}
+                        <td style="width: 200px;">
+                            {% if item.finished %}
+                                {{ item.finished }}
                             {% endif%}
                         </td>
                         <td class="td_button">
@@ -100,7 +48,7 @@
                                 <table>
                                     {% for val in ['username', 'hwaddr', 'uuid', 'path'] %}
                                         <tr>
-                                            <td class="details_title"><b>{{ val }}:</b></td>
+                                            <td class="details_title">{{ val }}:</td>
                                             <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="{{ item[type][val] }}" /><br></td>
                                         </tr>
                                     {% endfor %}
@@ -135,8 +83,18 @@
                     </tr>
                 </table>
 
-                <h3>Log:</h3>
-                <pre>{{ item.log }}</pre>
+                {% if item.started %}
+                    <h3>Started:</h3> {{ item.started }}
+                {% endif %}
+                {% if item.finished %}
+                    <h3>Finished:</h3> {{ item.finished }}
+                {% endif %}
+                {% if item.cmd %}
+                    <h3>Command:</h3> {{ item.cmd }}
+                {% endif %}
+                {% if item.log %}
+                    <h3>Log:</h3><pre>{{ item.log }}</pre>
+                {% endif %}
 
             </div>
 
