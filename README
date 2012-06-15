@@ -3,7 +3,7 @@ Automated rsync wrapper and web UI.
 
 Features:
 
-- synchronize paths between hosts
+- synchronize data between hosts
 - allow both remote source and destination
 - discover lan hosts and partitions
 - find hosts from a username or a partition uuid or a mac address
