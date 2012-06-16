@@ -1,41 +1,66 @@
 {% extends "base.html" %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', filename='hosts.js') }}" type="text/javascript"></script>
+{% endblock %}
+
 {% block content %}
 
 {% for item in items %}
     <div class="content_element">
-        <h2>{{ item.host }}{% if item.hostname %} ({{ item.hostname }}){% endif %}</h2>
+        <input type="hidden" name="id" value="{{ item._id }}" />
 
-        <table>
+        <div class="element_name">
+            <table>
+                <tr>
+                    <td class="title">
+                        <h2>{{ item.host }}{% if item.hostname %} ({{ item.hostname }}){% endif %}</h2>
+                    </td>
+                    {% if item.users %}
+                    <td class="td_button">
+                        <a href=""><img class="img_button" src="{{ url_for('static', filename='more.png') }}" alt="more"></img></a>
+                    </td>
+                    {% endif %}
+                </tr>
+            </table>
+        </div>
 
-            {% for title, key in [('Users', 'users'), ('MAC address', 'hwaddr')] %}
-                {% if item[key] %}
+        <div class="element_info" style="display: none;">
+            <table>
+
+                {% if item.users %}
                     <tr>
-                        <td class="details_title"><b>{{ title }}:</b></td>
-                        <td>{{ item[key] }}</td>
+                        <td class="details_title" colspan="2"><h3>Users:</h3></td>
                     </tr>
-                {% endif %}
-            {% endfor %}
-
-            {% if item.disks %}
-                <tr><td class="details_title" colspan=3><b>Disks:</b></td></tr>
-
-                {% for info in item.disks %}
-                    <tr style="height: 10px;"></tr>
-
-                    {% for key, val in info|dictsort %}
+                    {% for username in item.users|sort %}
                         <tr>
-                            <td class="details_title2"><b>{{ key }}:</b></td>
-                            <td>{{ val }}</td>
+                            <td class="details_title2"><b>username:</b></td>
+                            <td>{{ username }}</td>
                         </tr>
+                        <tr style="height: 10px;"></tr>
                     {% endfor %}
+                {% endif %}
 
-
+                {% for title, data in [('Interfaces', item.ifconfig), ('Disks', item.disks)] %}
+                    {% if data %}
+                        <tr>
+                            <td class="details_title" colspan="2"><h3>{{ title }}:</h3></td>
+                        </tr>
+                        {% for info in data %}
+                            {% for key, val in info|dictsort %}
+                                <tr>
+                                    <td class="details_title2"><b>{{ key }}:</b></td>
+                                    <td>{% if val %}{{ val }}{% endif %}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr style="height: 10px;"></tr>
+                        {% endfor %}
+                    {% endif %}
                 {% endfor %}
 
-            {% endif %}
+            </table>
+        </div>
 
-        </table>
 
     </div>
 {% endfor %}

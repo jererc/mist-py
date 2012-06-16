@@ -42,7 +42,7 @@ def update_hosts():
 
 @timeout(hours=1)
 @timer()
-def update_hosts_info():
+def update_info():
     col = get_db()[settings.COL_HOSTS]
 
     for res in col.find({'alive': True}):
@@ -90,7 +90,7 @@ def update_hosts_info():
 @loop(600)
 def main():
     if update_hosts():
-        update_hosts_info()
+        update_info()
 
 
 if __name__ == '__main__':

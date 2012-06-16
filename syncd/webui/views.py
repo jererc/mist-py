@@ -90,6 +90,18 @@ def hosts():
     res = get_db()[COL_HOSTS].find()
     return render_template('hosts.html', items=res)
 
+@app.route('/hosts/status')
+def get_host_status():
+    id = request.args.get('id')
+    res = get_db()[COL_HOSTS].find_one({'_id': ObjectId(id)})
+
+    if res and res.get('alive'):
+        result = True
+    else:
+        result = False
+
+    return jsonify(result=result)
+
 def _get_params(prefix, data):
     res = {}
     for attr in ('username', 'hwaddr', 'uuid', 'path'):
