@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 
 @timer()
 def update_hosts():
-    '''Update hosts.
-    '''
     col = get_db()[settings.COL_HOSTS]
 
     hosts = get_hosts()
@@ -48,8 +46,6 @@ def update_info():
     for res in col.find({'alive': True}):
         res.setdefault('users', {})
         res.setdefault('failed', {})
-
-        # TODO: clean 'users' and 'failed' if username/password not in USERS anymore
 
         for username, password in settings.USERS.items():
             fval = res['failed'].get(username, 0)

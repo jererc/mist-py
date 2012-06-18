@@ -4,27 +4,13 @@ from datetime import datetime, timedelta
 import logging
 
 from syncd import env, settings
-from syncd.util import get_db, get_localhost
+from syncd.util import get_db
 
 from systools.system import loop, timeout, timer, dotdict
 from systools.network.ssh import Host
 
 
 logger = logging.getLogger(__name__)
-
-
-def clean_failed():
-    '''Clean parameters not found collection.
-    '''
-    db = get_db()
-    params_list = []
-
-    for res in db[settings.COL_SYNCS].find():
-        for type in ('src', 'dst'):
-            params = dict([(k, res[type].get(k)) for k in ('username', 'hwaddr', 'uuid')])
-            params_list.append(params)
-
-    db[settings.COL_FAILED].remove({'params': {'$nin': params_list}})
 
 
 class Sync(dotdict):
@@ -136,13 +122,11 @@ class Sync(dotdict):
 
     @timer()
     def find_hosts(self):
-        # Get source
         self.s_src = self.get_session(**self.src)
         if not self.s_src:
             return
         self.src_path = self.s_src.path
 
-        # Get destination
         self.s_dst = self.get_session(make_path=True, **self.dst)
         if not self.s_dst:
             return
@@ -207,6 +191,19 @@ class Sync(dotdict):
         if info.get('log'):
             logger.info(info['log'])
 
+
+def clean_failed():
+    '''Clean parameters not found collection.
+    '''
+    db = get_db()
+    params_list = []
+
+    for res in db[settings.COL_SYNCS].find():
+        for type in ('src', 'dst'):
+            params = dict([(k, res[type].get(k)) for k in ('username', 'hwaddr', 'uuid')])
+            params_list.append(params)
+
+    db[settings.COL_FAILED].remove({'params': {'$nin': params_list}})
 
 @loop(60)
 @timer()
