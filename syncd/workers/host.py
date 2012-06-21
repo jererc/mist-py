@@ -47,6 +47,15 @@ def update_info():
         res.setdefault('users', {})
         res.setdefault('failed', {})
 
+        # Clean users
+        for user in res['users']:
+            if user not in settings.USERS \
+                    or res['users'][user] != settings.USERS[user]:
+                del res['users'][user]
+        for user in res['failed']:
+            if user not in settings.USERS:
+                del res['failed'][user]
+
         for username, password in settings.USERS.items():
             fval = res['failed'].get(username, 0)
             if isinstance(fval, datetime) and fval > datetime.utcnow() - settings.DELTA_FAILED_USERNAME:
