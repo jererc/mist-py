@@ -75,7 +75,7 @@ class Sync(dotdict):
         return os.path.join(path_uuid, path.lstrip('/'))    # strip beginning '/' to avoid the filesystem root
 
     def _get_session(self, username=None, hwaddr=None, uuid=None):
-        spec = {}
+        spec = {'alive': True}
         if username:
             spec['users.%s' % username] = {'$exists': True}
         if hwaddr:
