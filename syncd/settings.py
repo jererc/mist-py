@@ -1,14 +1,14 @@
 from datetime import timedelta
 
 
-USERS = {}  # lan usernames and passwords (<username>: <password>)
 DEFAULT_RSYNC_ARGS = ['-ax', '--ignore-errors']
 SYNC_TIMEOUT = 7200     # seconds
-AUTOMOUNT_UUID_DEV = True
+AUTOMOUNT = True
 
 
 # Db
 DB_NAME = 'syncd'
+COL_USERS = 'users'
 COL_SYNCS = 'syncs'
 COL_HOSTS = 'hosts'
 COL_FAILED = 'failed'

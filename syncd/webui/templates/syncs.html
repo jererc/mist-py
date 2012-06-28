@@ -46,7 +46,7 @@
                             <td>
                                 <h3>{{ caption }}:</h3>
                                 <table>
-                                    {% for val in ['username', 'hwaddr', 'uuid', 'path'] %}
+                                    {% for val in ['username', 'password', 'hwaddr', 'uuid', 'path'] %}
                                         <tr>
                                             <td class="details_title">{{ val }}:</td>
                                             <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="{{ item[type][val] }}" /><br></td>
@@ -56,7 +56,7 @@
                             </td>
                         {% endfor %}
                     </tr>
-                <table>
+                </table>
 
                 <h3>Options:</h3>
                 <table>

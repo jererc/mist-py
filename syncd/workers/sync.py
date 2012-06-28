@@ -7,6 +7,7 @@ from syncd import env, settings
 from syncd.util import get_db
 
 from systools.system import loop, timeout, timer, dotdict
+from systools.network import get_ip
 from systools.network.ssh import Host
 
 
@@ -17,6 +18,7 @@ class Sync(dotdict):
     def __init__(self, doc):
         super(Sync, self).__init__(doc)
         self.db = get_db()
+        self.callable = self.process_rsync
 
     def __del__(self):
         self.update(processing=False)
@@ -26,7 +28,9 @@ class Sync(dotdict):
         if date and date + timedelta(hours=self.recurrence) > datetime.utcnow():
             return
 
-        return self.get('hour_start', 0) <= datetime.now().hour < self.get('hour_end', 24)
+        hour_start = self.get('hour_start') or 0
+        hour_end = self.get('hour_end') or 24
+        return hour_start <= datetime.now().hour < hour_end
 
     def _update_failed(self, session, params):
         col = self.db[settings.COL_FAILED]
@@ -56,72 +60,86 @@ class Sync(dotdict):
         disk = self._get_disk(disks, uuid) or {}
         path_uuid = disk.get('path')
 
-        if not path_uuid or not session.path_exists(path_uuid):
+        if not path_uuid or not session.exists(path_uuid):
 
-            if not settings.AUTOMOUNT_UUID_DEV or retries <= 0:
-                self.update(log='failed to get path for uuid %s on %s (%s)' % (uuid, session.hostname, session.host))
+            if not settings.AUTOMOUNT or retries <= 0:
+                self.update(log='failed to get path for uuid %s on %s' % (uuid, session.host))
                 return
 
             dev = disk.get('dev')
             if not dev:
-                self.update(log='failed to get device for uuid %s on %s (%s)' % (uuid, session.hostname, session.host))
+                self.update(log='failed to get device for uuid %s on %s' % (uuid, session.host))
                 return
             if not session.mount(dev):
-                self.update(log='failed to mount device %s (uuid %s) on %s (%s)' % (dev, uuid, session.hostname, session.host))
+                self.update(log='failed to mount device %s (uuid %s) on %s' % (dev, uuid, session.host))
                 return
 
             return self._get_abs_path(session, uuid, path, retries=retries-1)
 
-        return os.path.join(path_uuid, path.lstrip('/'))    # strip beginning '/' to avoid the filesystem root
+        return os.path.join(path_uuid, path.lstrip('/'))    # lstrip '/' to avoid getting the filesystem root with join()
 
-    def _get_session(self, username=None, hwaddr=None, uuid=None):
+    def _get_session(self, **kwargs):
+        user = None
         spec = {'alive': True}
-        if username:
-            spec['users.%s' % username] = {'$exists': True}
-        if hwaddr:
-            spec['ifconfig'] = {'$elemMatch': {'hwaddr': hwaddr}}
-        if uuid:
-            spec['disks'] = {'$elemMatch': {'uuid': uuid}}
+
+        if kwargs.get('username') and kwargs.get('password'):
+            user = '%s %s' % (kwargs['username'], kwargs['password'])
+            spec['users.%s' % user] = {'$exists': True}
+            # users = {user: {}}
+        if kwargs.get('hwaddr'):
+            spec['ifconfig'] = {'$elemMatch': {'hwaddr': kwargs['hwaddr']}}
+        if kwargs.get('uuid'):
+            spec['disks'] = {'$elemMatch': {'uuid': kwargs['uuid']}}
 
         for res in self.db[settings.COL_HOSTS].find(spec):
-            usernames = [username] if username else res['users'].keys()
-            for username_ in usernames:
-                session = Host(res['host'], username_, res['users'][username_])
-                if session.logged:
-                        return session
+            for user_, info in res['users'].items():
+                if user and user_ != user:
+                    continue
 
-    def get_session(self, path, username=None, hwaddr=None, uuid=None, make_path=False):
+                username, password = user_.split(' ', 1)
+                session = Host(res['host'], username, password, port=info.get('port', 22))
+                if session.logged:
+                    session.hostname = res['hostname']
+                    return session
+
+    def get_session(self, make_path=False, **kwargs):
         '''Get a ssh session on the host matching the sync parameters.
 
         :return: Ssh object
         '''
-        params = {'username': username, 'hwaddr': hwaddr, 'uuid': uuid}
-        session = self._get_session(**params)
-        self._update_failed(session, params)
+        session = self._get_session(**kwargs)
+        self._update_failed(session, kwargs)
         if not session:
             return
 
-        session.hostname = session.get_hostname()
+        path = kwargs['path']
 
-        if uuid:
-            path = self._get_abs_path(session, uuid, path)
+        if kwargs.get('uuid'):
+            path = self._get_abs_path(session, kwargs['uuid'], path)
             if not path:
                 return
 
-        if not session.path_exists(path):
+        # Check rsync
+        if session.run_ssh('rsync --version', use_sudo=True)[1] != 0:
+            self.callable = self.process_sftp
+
+        if not session.exists(path):
             if not make_path:
-                self.update(log='path %s does not exist on %s (%s)' % (path, session.hostname, session.host))
+                self.update(log='path %s does not exist on %s' % (path, session.host))
                 return
-            elif not session.mkdir(path, use_sudo=True):
-                self.update(log='failed to make path %s on %s (%s)' % (path, session.hostname, session.host))
+            elif self.callable == self.process_rsync \
+                    and not session.mkdir(path):
+                self.update(log='failed to make path %s on %s' % (path, session.host))
                 return
 
         session.path = path
-        session.path_str = '%s:%s' % (session.hostname, path)
+        session.path_str = '%s:%s' % (session.hostname or session.host, path)
         return session
 
     @timer()
     def find_hosts(self):
+        local_ips = get_ip()
+
         self.s_src = self.get_session(**self.src)
         if not self.s_src:
             return
@@ -131,12 +149,26 @@ class Sync(dotdict):
         if not self.s_dst:
             return
 
-        if self.s_dst.host == self.s_src.host:
-            self.dst_path = self.s_dst.path
-            self.ssh_password = None
+        if self.callable == self.process_rsync:
+            if self.s_dst.host == self.s_src.host:
+                self.dst_path = self.s_dst.path
+                self.ssh_password = None
+            else:
+                self.dst_path = '%s@%s:%s' % (self.s_dst.username, self.s_dst.host, self.s_dst.path)
+                self.ssh_password = self.s_dst.password
+
         else:
-            self.dst_path = '%s@%s:%s' % (self.s_dst.username, self.s_dst.host, self.s_dst.path)
-            self.ssh_password = self.s_dst.password
+            self.dst_path = self.s_dst.path
+            local_ips = get_ip()
+            if self.s_src.host in local_ips:
+                self.sftp = self.s_dst
+                self.sftp_download = False
+            elif self.s_dst.host in local_ips:
+                self.sftp = self.s_src
+                self.sftp_download = True
+            else:
+                logger.error('failed to sync %s with %s using SFTP: source and destination are both remote', self.s_src.path_str, self.s_dst.path_str)
+                return
 
         return True
 
@@ -153,8 +185,8 @@ class Sync(dotdict):
         return ' '.join(cmd)
 
     @timeout(settings.SYNC_TIMEOUT)
-    def process(self):
-        '''Run the rsync command.
+    def process_rsync(self):
+        '''Sync using rsync.
         '''
         cmd = self._get_cmd()
 
@@ -183,6 +215,39 @@ class Sync(dotdict):
         else:
             info['success'] = False
             logger.error('failed to sync %s with %s', self.s_src.path_str, self.s_dst.path_str)
+
+        self.update(**info)
+
+    @timeout(settings.SYNC_TIMEOUT)
+    def process_sftp(self):
+        '''Sync using SFTP.
+        '''
+        started = datetime.utcnow()
+        self.update(processing=True,
+                started=started,
+                finished=None,
+                log='started to sync %s with %s' % (self.s_src.path_str, self.s_dst.path_str),
+                )
+
+        exclude = self.get('exclusions')
+        if exclude:
+            exclude = [r'^%s' % e for e in exclude]
+
+        info = {
+            'processing': False,
+            'finished': datetime.utcnow(),
+            }
+        try:
+            self.sftp.sftpsync(self.src_path,
+                    self.dst_path,
+                    download=self.sftp_download,
+                    exclude=exclude,
+                    delete=self.get('delete'))
+            info.update({'success': True, 'log': None})
+            logger.info('synced %s with %s', self.s_src.path_str, self.s_dst.path_str)
+        except Exception, e:
+            info.update({'success': False, 'log': str(e)})
+            logger.error('failed to sync %s with %s: %s', self.s_src.path_str, self.s_dst.path_str, str(e))
 
         self.update(**info)
 
@@ -216,8 +281,7 @@ def main():
             continue
         if not sync.find_hosts():
             continue
-
-        sync.process()
+        sync.callable()
 
     clean_failed()
 

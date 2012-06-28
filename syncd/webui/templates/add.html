@@ -7,24 +7,56 @@
 {% block content %}
 <div class="content_form">
     <form>
+        <h2>Add a user</h2>
+        <input type="hidden" name="type" value="user" />
+        <table>
+            <tr>
+                <td class="details_title">Username:</td>
+                <td>
+                    <input type="text" name="username" size="40" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td class="details_title">Password:</td>
+                <td>
+                    <input type="text" name="password" size="40" value="" />
+                </td>
+            </tr>
+            <tr>
+                <td class="details_title">Port:</td>
+                <td>
+                    <input type="number" name="port" title="ssh port" size="2" min="1" max="65536" value="22" />
+                </td>
+            </tr>
+        </table>
+
+        <br>
+        <button class="button" type="submit" value="add">add</button>
+
+    </form>
+</div>
+
+<div class="content_form">
+    <form>
         <h2>Add a sync</h2>
+        <input type="hidden" name="type" value="sync" />
         <table>
             <tr>
                 {% for caption, type in [('Source', 'src'), ('Destination', 'dst')] %}
                     <td>
                         <h3>{{ caption }}:</h3>
                         <table>
-                            {% for val in ['username', 'hwaddr', 'uuid', 'path'] %}
+                            {% for val in ['username', 'password', 'hwaddr', 'uuid', 'path'] %}
                                 <tr>
                                     <td class="details_title">{{ val }}:</td>
-                                    <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="" /><br></td>
+                                    <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="" /></td>
                                 </tr>
                             {% endfor %}
                         </table>
                     </td>
                 {% endfor %}
             </tr>
-        <table>
+        </table>
 
         <h3>Options:</h3>
         <table>
@@ -49,7 +81,6 @@
                     <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="-1" />
                 </td>
             </tr>
-
         </table>
 
         <br>
