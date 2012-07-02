@@ -17,11 +17,7 @@ logger = logging.getLogger(__name__)
 class Sync(dotdict):
     def __init__(self, doc):
         super(Sync, self).__init__(doc)
-        self.db = get_db()
         self.callable = self.process_rsync
-
-    def __del__(self):
-        self.update(processing=False)
 
     def validate(self):
         date = self.get('finished')
@@ -33,7 +29,7 @@ class Sync(dotdict):
         return hour_start <= datetime.now().hour < hour_end
 
     def _update_failed(self, session, params):
-        col = self.db[settings.COL_FAILED]
+        col = get_db()[settings.COL_FAILED]
         if session:
             col.remove({'params': params}, safe=True)
         else:
@@ -85,13 +81,12 @@ class Sync(dotdict):
         if kwargs.get('username') and kwargs.get('password'):
             user = '%s %s' % (kwargs['username'], kwargs['password'])
             spec['users.%s' % user] = {'$exists': True}
-            # users = {user: {}}
         if kwargs.get('hwaddr'):
             spec['ifconfig'] = {'$elemMatch': {'hwaddr': kwargs['hwaddr']}}
         if kwargs.get('uuid'):
             spec['disks'] = {'$elemMatch': {'uuid': kwargs['uuid']}}
 
-        for res in self.db[settings.COL_HOSTS].find(spec):
+        for res in get_db()[settings.COL_HOSTS].find(spec):
             for user_, info in res['users'].items():
                 if user and user_ != user:
                     continue
@@ -138,8 +133,6 @@ class Sync(dotdict):
 
     @timer()
     def find_hosts(self):
-        local_ips = get_ip()
-
         self.s_src = self.get_session(**self.src)
         if not self.s_src:
             return
@@ -148,27 +141,7 @@ class Sync(dotdict):
         self.s_dst = self.get_session(make_path=True, **self.dst)
         if not self.s_dst:
             return
-
-        if self.callable == self.process_rsync:
-            if self.s_dst.host == self.s_src.host:
-                self.dst_path = self.s_dst.path
-                self.ssh_password = None
-            else:
-                self.dst_path = '%s@%s:%s' % (self.s_dst.username, self.s_dst.host, self.s_dst.path)
-                self.ssh_password = self.s_dst.password
-
-        else:
-            self.dst_path = self.s_dst.path
-            local_ips = get_ip()
-            if self.s_src.host in local_ips:
-                self.sftp = self.s_dst
-                self.sftp_download = False
-            elif self.s_dst.host in local_ips:
-                self.sftp = self.s_src
-                self.sftp_download = True
-            else:
-                logger.error('failed to sync %s with %s using SFTP: source and destination are both remote', self.s_src.path_str, self.s_dst.path_str)
-                return
+        self.dst_path = self.s_dst.path
 
         return True
 
@@ -188,19 +161,23 @@ class Sync(dotdict):
     def process_rsync(self):
         '''Sync using rsync.
         '''
+        if self.s_dst.host == self.s_src.host:
+            ssh_password = None
+        else:
+            self.dst_path = '%s@%s:%s' % (self.s_dst.username, self.s_dst.host, self.s_dst.path)
+            ssh_password = self.s_dst.password
+
         cmd = self._get_cmd()
 
-        started = datetime.utcnow()
         self.update(
                 processing=True,
-                started=started,
+                started=datetime.utcnow(),
                 finished=None,
                 cmd=cmd,
-                log='started to sync %s with %s' % (self.s_src.path_str, self.s_dst.path_str),
-                )
+                log='started to sync %s with %s' % (self.s_src.path_str, self.s_dst.path_str))
 
         stdout, return_code = self.s_src.run_ssh(cmd,
-                password=self.ssh_password,
+                password=ssh_password,
                 use_sudo=True,
                 timeout=settings.SYNC_TIMEOUT)
 
@@ -222,37 +199,55 @@ class Sync(dotdict):
     def process_sftp(self):
         '''Sync using SFTP.
         '''
-        started = datetime.utcnow()
+        local_ips = get_ip()
+        if self.s_src.host in local_ips:
+            sftp = self.s_dst
+            download = False
+        elif self.s_dst.host in local_ips:
+            sftp = self.s_src
+            download = True
+        else:
+            self.update(processing=False,
+                    started=datetime.utcnow(),
+                    finished=None,
+                    log='failed to sync %s with %s using SFTP: source and destination are both remote' % (self.s_src.path_str, self.s_dst.path_str))
+            return
+
         self.update(processing=True,
-                started=started,
+                started=datetime.utcnow(),
                 finished=None,
-                log='started to sync %s with %s' % (self.s_src.path_str, self.s_dst.path_str),
-                )
+                log='started to sync %s with %s' % (self.s_src.path_str, self.s_dst.path_str))
 
         exclude = self.get('exclusions')
         if exclude:
             exclude = [r'^%s' % e for e in exclude]
 
-        info = {
-            'processing': False,
-            'finished': datetime.utcnow(),
-            }
         try:
-            self.sftp.sftpsync(self.src_path,
+            sftp.sftpsync(self.src_path,
                     self.dst_path,
-                    download=self.sftp_download,
+                    download=download,
                     exclude=exclude,
                     delete=self.get('delete'))
-            info.update({'success': True, 'log': None})
+            info = {
+                'success': True,
+                'finished': datetime.utcnow(),
+                'processing': False,
+                'log': None,
+                }
             logger.info('synced %s with %s', self.s_src.path_str, self.s_dst.path_str)
         except Exception, e:
-            info.update({'success': False, 'log': str(e)})
-            logger.error('failed to sync %s with %s: %s', self.s_src.path_str, self.s_dst.path_str, str(e))
+            info = {
+                'success': False,
+                'finished': datetime.utcnow(),
+                'processing': False,
+                'log': str(e),
+                }
+            logger.error('failed to sync %s with %s: %s', self.s_src.path_str, self.s_dst.path_str, e)
 
         self.update(**info)
 
     def update(self, **info):
-        self.db[settings.COL_SYNCS].update({'_id': self._id}, {'$set': info}, safe=True)
+        get_db()[settings.COL_SYNCS].update({'_id': self._id}, {'$set': info}, safe=True)
         if info.get('log'):
             logger.info(info['log'])
 

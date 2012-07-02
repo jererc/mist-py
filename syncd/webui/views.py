@@ -110,7 +110,8 @@ def syncs_action():
     id = request.args.get('id')
     if id:
         if action == 'reset':
-            get_db()[COL_SYNCS].update({'_id': ObjectId(id)}, {'$unset': {'finished': True}}, safe=True)
+            get_db()[COL_SYNCS].update({'_id': ObjectId(id)},
+                    {'$unset': {'finished': True}}, safe=True)
 
         elif action == 'remove':
             get_db()[COL_SYNCS].remove({'_id': ObjectId(id)})
