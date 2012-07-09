@@ -3,6 +3,8 @@ import os.path
 from datetime import datetime, timedelta
 import logging
 
+from pymongo import ASCENDING
+
 from syncd import env, settings
 from syncd.util import get_db
 
@@ -265,11 +267,19 @@ def clean_failed():
 
     db[settings.COL_FAILED].remove({'params': {'$nin': params_list}})
 
+def clean_processing():
+    get_db()[settings.COL_SYNCS].update({'processing': True},
+            {'$set': {'processing': False, 'started': None}},
+            safe=True,
+            multi=True)
+
 @loop(60)
 @timer()
 def main():
+    clean_processing()
+
     for res in get_db()[settings.COL_SYNCS].find(
-            sort=[('finished', 1)],
+            sort=[('finished', ASCENDING)],
             timeout=False):
         sync = Sync(res)
         if not sync.validate():
