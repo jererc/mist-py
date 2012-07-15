@@ -5,12 +5,11 @@ import logging
 
 from pymongo import ASCENDING
 
-from syncd import env, settings
+from syncd import env, settings, get_host
 from syncd.util import get_db
 
 from systools.system import loop, timeout, timer, dotdict
 from systools.network import get_ip
-from systools.network.ssh import Host
 
 
 logger = logging.getLogger(__name__)
@@ -76,35 +75,12 @@ class Sync(dotdict):
 
         return os.path.join(path_uuid, path.lstrip('/'))    # lstrip '/' to avoid getting the filesystem root with join()
 
-    def _get_session(self, **kwargs):
-        user = None
-        spec = {'alive': True}
-
-        if kwargs.get('username') and kwargs.get('password'):
-            user = '%s %s' % (kwargs['username'], kwargs['password'])
-            spec['users.%s' % user] = {'$exists': True}
-        if kwargs.get('hwaddr'):
-            spec['ifconfig'] = {'$elemMatch': {'hwaddr': kwargs['hwaddr']}}
-        if kwargs.get('uuid'):
-            spec['disks'] = {'$elemMatch': {'uuid': kwargs['uuid']}}
-
-        for res in get_db()[settings.COL_HOSTS].find(spec):
-            for user_, info in res['users'].items():
-                if user and user_ != user:
-                    continue
-
-                username, password = user_.split(' ', 1)
-                session = Host(res['host'], username, password, port=info.get('port', 22))
-                if session.logged:
-                    session.hostname = res['hostname']
-                    return session
-
     def get_session(self, make_path=False, **kwargs):
         '''Get a ssh session on the host matching the sync parameters.
 
         :return: Ssh object
         '''
-        session = self._get_session(**kwargs)
+        session = get_host(**kwargs)
         self._update_failed(session, kwargs)
         if not session:
             return
@@ -171,8 +147,7 @@ class Sync(dotdict):
 
         cmd = self._get_cmd()
 
-        self.update(
-                processing=True,
+        self.update(processing=True,
                 started=datetime.utcnow(),
                 finished=None,
                 cmd=cmd,

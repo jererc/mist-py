@@ -14,11 +14,10 @@ COL_HOSTS = 'hosts'
 COL_FAILED = 'failed'
 
 
-USERNAME_ATTEMPTS = 3
-DELTA_HOST = timedelta(days=7)
+DELTA_HOST_ALIVE = timedelta(days=7)
+DELTA_FAILED_USERNAME = timedelta(hours=6)
+DELTA_HOST_UPDATE = timedelta(minutes=10)
 DELTA_FAILED_PARAMS = timedelta(days=4)
-DELTA_FAILED_USERNAME = timedelta(hours=12)
-
 
 # Logging
 LOG_FORMAT = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'

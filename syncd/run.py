@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 import os.path
+import sys
 import time
 from multiprocessing import Process, Queue
 from glob import glob
-import logging
-from logging.handlers import RotatingFileHandler
-import sys
 import signal
 import traceback
+import logging
+from logging.handlers import RotatingFileHandler
 
 from syncd import settings
+from syncd.util import get_db, update_host
 
 
 WORKERS_DIR = 'workers'
@@ -76,9 +77,9 @@ def worker_configurer(queue):
     root.addHandler(handler)
     root.setLevel(logging.DEBUG)
 
-def worker_process(queue, configurer, callable):
+def worker_process(queue, configurer, callable, **kwargs):
     configurer(queue)
-    callable()
+    callable(**kwargs)
 
 def get_workers():
     workers = {}
@@ -105,23 +106,30 @@ def main():
     listener.start()
 
     workers = get_workers()
+    workers_hosts = {}
 
     def terminate(signum, frame):
         if os.getpid() == main_pid:
-            # Stop workers
+
             for worker in workers:
                 proc = workers[worker].get('proc')
                 if proc and proc.is_alive():
                     proc.terminate()
-                    logger.info('stopped %s', worker)
+                    logger.info('stopped process %s', worker)
+
+            for proc in workers_hosts.values():
+                if proc.is_alive():
+                    proc.terminate()
+                    logger.info('stopped process %s', proc.name)
 
             queue.put_nowait(None)
-            # listener.join()
             listener.terminate()
 
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, terminate)
+
+    col = get_db()[settings.COL_HOSTS]
 
     while True:
         for worker in workers:
@@ -138,6 +146,30 @@ def main():
             workers[worker]['proc'].start()
             logger.info('started %s', worker)
             time.sleep(1)
+
+        # Update hosts workers
+        for res in col.find({'alive': True}):
+            host = res['host']
+            proc = workers_hosts.get(host)
+            if proc:
+                if proc.is_alive():
+                    continue
+                logger.error('%s died', proc.name)
+
+            workers_hosts[host] = Process(target=worker_process,
+                    args=(queue, worker_configurer, update_host),
+                    kwargs={'host': host},
+                    name='update_%s' % host)
+
+            workers_hosts[host].start()
+            logger.info('started to update %s', host)
+
+        for host, proc in workers_hosts.items():
+            res = col.find_one({'host': host})
+            if not res or not res['alive']:
+                proc.terminate()
+                del workers_hosts[host]
+                logger.info('stopped to update %s', host)
 
         time.sleep(10)
 
