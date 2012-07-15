@@ -13,13 +13,13 @@
             <tr>
                 <td class="details_title">Username:</td>
                 <td>
-                    <input type="text" name="username" size="40" value="" />
+                    <input type="text" name="username" size="30" value="" />
                 </td>
             </tr>
             <tr>
                 <td class="details_title">Password:</td>
                 <td>
-                    <input type="text" name="password" size="40" value="" />
+                    <input type="text" name="password" size="30" value="" />
                 </td>
             </tr>
             <tr>
@@ -46,10 +46,22 @@
                     <td>
                         <h3>{{ caption }}:</h3>
                         <table>
-                            {% for val in ['username', 'password', 'hwaddr', 'uuid', 'path'] %}
+                            <tr>
+                                <td class="details_title">user:</td>
+                                <td>
+                                    <select title="user" name="{{ type }}_user">
+                                        <option value="">any</option>
+                                        {% for user in users %}
+                                            <option value="{{ user['username'] }} {{ user['password'] }}">{{ user['username'] }} / {{ user['password'] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+
+                            {% for val in ['hwaddr', 'uuid', 'path'] %}
                                 <tr>
                                     <td class="details_title">{{ val }}:</td>
-                                    <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="" /></td>
+                                    <td><input type="text" name="{{ type }}_{{ val }}" size="30" value="" /></td>
                                 </tr>
                             {% endfor %}
                         </table>
@@ -62,7 +74,7 @@
         <table>
             <tr>
                 <td class="details_title">exclusions:</td>
-                <td><input type="text" name="exclusions" size="40" value="" /></td>
+                <td><input type="text" name="exclusions" size="30" value="" /></td>
             </tr>
             <tr>
                 <td class="details_title">delete:</td>

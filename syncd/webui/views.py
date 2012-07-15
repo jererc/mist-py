@@ -7,6 +7,7 @@ from pymongo.objectid import ObjectId
 from syncd.settings import COL_SYNCS, COL_USERS, COL_HOSTS
 from syncd.util import get_db
 from syncd.webui import app
+from syncd import get_users
 
 
 @app.route('/')
@@ -19,7 +20,7 @@ def index():
 #
 @app.route('/add')
 def add():
-    return render_template('add.html')
+    return render_template('add.html', users=get_users())
 
 @app.route('/add/action')
 def add_action():
@@ -102,7 +103,7 @@ def syncs():
                 })
         items.append(res)
 
-    return render_template('syncs.html', items=items)
+    return render_template('syncs.html', users=get_users(), items=items)
 
 @app.route('/syncs/action')
 def syncs_action():
@@ -153,10 +154,15 @@ def get_sync_status():
 
 def _get_params(prefix, data):
     res = {}
-    for attr in ('username', 'password', 'hwaddr', 'uuid', 'path'):
+    for attr in ('user', 'hwaddr', 'uuid', 'path'):
         value = data.get('%s_%s' % (prefix, attr))
         if value:
-            res[attr] = value
+            if attr == 'user':
+                username, password = value.split(' ', 1)
+                res['username'] = username
+                res['password'] = password
+            else:
+                res[attr] = value
     return res
 
 def _validate_params(params):
@@ -179,19 +185,20 @@ def _get_params_str(params):
 def hosts():
     items = []
     for res in get_db()[COL_HOSTS].find():
-        res['usernames'] = [user.split(' ', 1)[0] for user in res['users']]
+        res['usernames'] = [user.split(' ', 1)[0] for user in res.get('users', [])]
         items.append(res)
 
     return render_template('hosts.html', items=items)
 
 @app.route('/hosts/status')
 def get_host_status():
+    result = None
     id = request.args.get('id')
     res = get_db()[COL_HOSTS].find_one({'_id': ObjectId(id)})
-
     if res and res.get('alive'):
-        result = True
-    else:
-        result = False
+        if res.get('users'):
+            result = True
+        else:
+            result = False
 
     return jsonify(result=result)

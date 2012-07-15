@@ -5,7 +5,6 @@ function updateStatus() {
         $.getJSON($SCRIPT_ROOT + '/hosts/status',
             {id: $(this).find('input[name="id"]').val()},
             function(data) {
-
                 if (data.result) {
                     title.css('color', 'green');
                     }

@@ -46,7 +46,19 @@
                             <td>
                                 <h3>{{ caption }}:</h3>
                                 <table>
-                                    {% for val in ['username', 'password', 'hwaddr', 'uuid', 'path'] %}
+                                    <tr>
+                                        <td class="details_title">user:</td>
+                                        <td>
+                                            <select title="user" name="{{ type }}_user">
+                                                <option value="">any</option>
+                                                {% for user in users %}
+                                                    <option value="{{ user['username'] }} {{ user['password'] }}"{% if item[type]['username'] == user['username'] and item[type]['password'] == user['password'] %} selected="true"{% endif %}>{{ user['username'] }} / {{ user['password'] }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                    </tr>
+
+                                    {% for val in ['hwaddr', 'uuid', 'path'] %}
                                         <tr>
                                             <td class="details_title">{{ val }}:</td>
                                             <td><input type="text" name="{{ type }}_{{ val }}" size="40" value="{{ item[type][val] }}" /><br></td>
