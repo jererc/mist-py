@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os.path
+import os
 import sys
 import time
 from multiprocessing import Process, Queue
@@ -98,38 +98,22 @@ def get_workers():
     return workers
 
 def main():
-    main_pid = os.getpid()
+    os.setpgrp()
+
+    def sigint_handler(signum, frame):
+        os.killpg(os.getpgrp(), 9)
+
+    signal.signal(signal.SIGTERM, sigint_handler)
 
     queue = Queue(-1)
     listener = Process(target=listener_process,
             args=(queue, listener_configurer))
     listener.start()
 
+    col = get_db()[settings.COL_HOSTS]
+
     workers = get_workers()
     workers_hosts = {}
-
-    def terminate(signum, frame):
-        if os.getpid() == main_pid:
-
-            for worker in workers:
-                proc = workers[worker].get('proc')
-                if proc and proc.is_alive():
-                    proc.terminate()
-                    logger.info('stopped process %s', worker)
-
-            for proc in workers_hosts.values():
-                if proc.is_alive():
-                    proc.terminate()
-                    logger.info('stopped process %s', proc.name)
-
-            queue.put_nowait(None)
-            listener.terminate()
-
-        sys.exit(0)
-
-    signal.signal(signal.SIGTERM, terminate)
-
-    col = get_db()[settings.COL_HOSTS]
 
     while True:
         for worker in workers:
