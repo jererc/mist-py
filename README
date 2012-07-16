@@ -4,12 +4,11 @@ Data sync over SSH.
 Features:
 
 - synchronize data between hosts
-- handle devices with stripped down OS (e.g. stock Android phone)
+- handle devices with stripped down OS (e.g.: stock Android phone)
 - allow both remote source and destination
 - discover lan hosts
 - discover partitions from a user, uuid or mac address
 - mount partitions
-- create destination path
 
 
 Start the daemon:
