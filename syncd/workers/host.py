@@ -20,8 +20,6 @@ def find_hosts():
         logger.debug('failed to find hosts')
         return
 
-    logger.debug('found hosts %s', hosts)
-
     for host in hosts:
         col.update({'host': host}, {'$set': {
                 'alive': True,
@@ -36,7 +34,7 @@ def find_hosts():
 
 @loop(300)
 @timeout(120)
-@timer()
+@timer(30)
 def main():
     find_hosts()
 

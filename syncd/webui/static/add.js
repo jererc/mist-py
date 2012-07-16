@@ -5,7 +5,9 @@ $(function() {
         $.getJSON($SCRIPT_ROOT + '/add/action',
             form,
             function(data) {
-                location.reload();
+                if (data.result) {
+                    location.reload();
+                    }
                 });
         return false;
         });

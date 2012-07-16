@@ -39,6 +39,7 @@ def add_action():
                 }
             if not db[COL_USERS].find_one(doc):
                 db[COL_USERS].insert(doc, safe=True)
+                return jsonify(result=True)
 
     elif add_type == 'sync':
         exclusions = request.args.get('exclusions')
@@ -55,10 +56,11 @@ def add_action():
             params[hour] = val if val >= 0 else None
 
         if _validate_params(params['src']) and _validate_params(params['dst']):
-            if not db[COL_SYNCS].insert(params):
+            if not db[COL_SYNCS].find_one(params):
                 db[COL_SYNCS].insert(params, safe=True)
+                return jsonify(result=True)
 
-    return jsonify(result=True)
+    return jsonify(result=False)
 
 
 #
@@ -170,7 +172,7 @@ def _validate_params(params):
         return
     if params.get('username') and not params.get('password'):
         return
-    if not (params.get('username') or params.get('hwaddr') or params.get('uuid')):
+    if not params.get('username') and not params.get('hwaddr') and not params.get('uuid'):
         return
     return True
 
