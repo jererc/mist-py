@@ -1,13 +1,14 @@
 import re
 
-from flask import jsonify, request, url_for, render_template, redirect
+from flask import session, request, url_for, render_template, redirect, jsonify
 
 from pymongo.objectid import ObjectId
+from pymongo import ASCENDING
 
 from syncd.settings import COL_SYNCS, COL_USERS, COL_HOSTS
 from syncd.util import get_db
 from syncd.webui import app
-from syncd import get_users
+from syncd import get_users, get_user
 
 
 @app.route('/')
@@ -24,22 +25,31 @@ def add():
 
 @app.route('/add/action')
 def add_action():
+    result = None
+
     db = get_db()
     add_type = request.args.get('type')
 
     if add_type == 'user':
         username = request.args.get('username')
         password = request.args.get('password')
-
         if username and password:
+            name = request.args.get('name') or '%s %s' % (username, password)
             doc = {
                 'username': username,
                 'password': password,
                 'port': int(request.args.get('port')),
                 }
-            if not db[COL_USERS].find_one(doc):
+            spec = {
+                '$or': [
+                    {'name': name},
+                    doc,
+                    ],
+                }
+            if not db[COL_USERS].find_one(spec):
+                doc['name'] = name
                 db[COL_USERS].insert(doc, safe=True)
-                return jsonify(result=True)
+                result = True
 
     elif add_type == 'sync':
         exclusions = request.args.get('exclusions')
@@ -58,9 +68,9 @@ def add_action():
         if _validate_params(params['src']) and _validate_params(params['dst']):
             if not db[COL_SYNCS].find_one(params):
                 db[COL_SYNCS].insert(params, safe=True)
-                return jsonify(result=True)
+                result = True
 
-    return jsonify(result=False)
+    return jsonify(result=result)
 
 
 #
@@ -68,28 +78,52 @@ def add_action():
 #
 @app.route('/users')
 def users():
-    res = get_db()[COL_USERS].find()
-    return render_template('users.html', items=res)
+    items = []
+    for res in get_db()[COL_USERS].find(sort=[('name', ASCENDING)]):
+        if not res.get('paths'):
+            res['paths'] = {}
+        items.append(res)
+    return render_template('users.html', items=items)
 
 @app.route('/users/action')
 def users_action():
+    result = None
+
     action = request.args.get('action')
     id = request.args.get('id')
     if id:
         if action == 'remove':
             get_db()[COL_USERS].remove({'_id': ObjectId(id)})
+            result = action
 
         elif action == 'save':
             username = request.args.get('username')
             password = request.args.get('password')
             if username and password:
-                get_db()[COL_USERS].update({'_id': ObjectId(id)}, {'$set': {
-                        'username': username,
-                        'password': password,
-                        'port': int(request.args.get('port')),
-                        }}, safe=True)
+                name = request.args.get('name') or '%s %s' % (username, password)
+                doc = {
+                    'username': username,
+                    'password': password,
+                    'port': int(request.args.get('port')),
+                    }
+                spec = {
+                    '_id': {'$ne': ObjectId(id)},
+                    '$or': [
+                        {'name': name},
+                        doc,
+                        ],
+                    }
+                if not get_db()[COL_USERS].find_one(spec):
+                    doc['name'] = name
+                    doc['paths'] = {
+                        'audio': request.args.get('path_audio', ''),
+                        'video': request.args.get('path_video', ''),
+                        }
+                    get_db()[COL_USERS].update({'_id': ObjectId(id)},
+                            {'$set': doc}, safe=True)
+                    result = action
 
-    return jsonify(result=action)
+    return jsonify(result=result)
 
 
 #
@@ -97,6 +131,8 @@ def users_action():
 #
 @app.route('/syncs')
 def syncs():
+    session['users'] = get_users()
+
     items = []
     for res in get_db()[COL_SYNCS].find():
         res.update({
@@ -105,19 +141,23 @@ def syncs():
                 })
         items.append(res)
 
-    return render_template('syncs.html', users=get_users(), items=items)
+    return render_template('syncs.html', items=items)
 
 @app.route('/syncs/action')
 def syncs_action():
+    result = None
+
     action = request.args.get('action')
     id = request.args.get('id')
     if id:
         if action == 'reset':
             get_db()[COL_SYNCS].update({'_id': ObjectId(id)},
                     {'$unset': {'finished': True}}, safe=True)
+            result = action
 
         elif action == 'remove':
             get_db()[COL_SYNCS].remove({'_id': ObjectId(id)})
+            result = action
 
         elif action == 'save':
             exclusions = request.args.get('exclusions')
@@ -135,8 +175,9 @@ def syncs_action():
 
             if _validate_params(params['src']) and _validate_params(params['dst']):
                 get_db()[COL_SYNCS].update({'_id': ObjectId(id)}, {'$set': params}, safe=True)
+                result = action
 
-    return jsonify(result=action)
+    return jsonify(result=result)
 
 @app.route('/syncs/status')
 def get_sync_status():
@@ -160,9 +201,10 @@ def _get_params(prefix, data):
         value = data.get('%s_%s' % (prefix, attr))
         if value:
             if attr == 'user':
-                username, password = value.split(' ', 1)
-                res['username'] = username
-                res['password'] = password
+                user = get_user(id=value)
+                if user:
+                    res['username'] = user['username']
+                    res['password'] = user['password']
             else:
                 res[attr] = value
     return res
@@ -177,7 +219,13 @@ def _validate_params(params):
     return True
 
 def _get_params_str(params):
-    return params.get('username') or params.get('hwaddr') or params.get('uuid') or ''
+    username = params.get('username')
+    password = params.get('password')
+    if username and password:
+        res = get_user(spec={'username': username, 'password': password})
+        if res:
+            return res['name']
+    return params.get('hwaddr') or params.get('uuid')
 
 
 #

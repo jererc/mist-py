@@ -14,19 +14,22 @@
             <table>
                 <tr>
                     <td class="title">
-                        <h2>{{ item.host }}{% if item.hostname %} ({{ item.hostname }}){% endif %}</h2>
+                        {{ item.host }}{% if item.hostname %} ({{ item.hostname }}){% endif %}
                     </td>
-                    {% if item.users %}
                     <td class="td_button">
                         <a href=""><img class="img_button" src="{{ url_for('static', filename='more.png') }}" alt="more"></img></a>
                     </td>
-                    {% endif %}
                 </tr>
             </table>
         </div>
 
         <div class="element_info" style="display: none;">
             <table>
+
+                <tr>
+                    <td class="details_title2"><b>seen:</b></td>
+                    <td>{{ item.seen }}</td>
+                </tr>
 
                 {% if item.users %}
                     <tr>

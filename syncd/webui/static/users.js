@@ -16,7 +16,7 @@ $(function() {
                     if (data.result == 'remove') {
                         $(div).fadeOut();
                         }
-                    else {
+                    else if (data.result) {
                         location.reload();
                         }
                     });

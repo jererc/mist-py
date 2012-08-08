@@ -11,6 +11,12 @@
         <input type="hidden" name="type" value="user" />
         <table>
             <tr>
+                <td class="details_title">Name:</td>
+                <td>
+                    <input type="text" name="name" size="30" value="" />
+                </td>
+            </tr>
+            <tr>
                 <td class="details_title">Username:</td>
                 <td>
                     <input type="text" name="username" size="30" value="" />
@@ -52,7 +58,7 @@
                                     <select title="user" name="{{ type }}_user">
                                         <option value="">any</option>
                                         {% for user in users %}
-                                            <option value="{{ user['username'] }} {{ user['password'] }}">{{ user['username'] }} / {{ user['password'] }}</option>
+                                            <option value="{{ user._id }}">{{ user.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </td>

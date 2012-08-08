@@ -1,4 +1,5 @@
 from datetime import datetime
+from copy import deepcopy
 import logging
 
 from pymongo import Connection
@@ -37,7 +38,7 @@ def update_host(host):
 
     # Clean users
     for key in ('users', 'failed'):
-        for user in res[key]:
+        for user in deepcopy(res[key]):
             username, password = user.split(' ', 1)
             if not col_users.find_one({'username': username, 'password': password}):
                 del res[key][user]

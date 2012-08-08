@@ -36,6 +36,9 @@ $(function() {
         if (action == 'edit') {
             $(div).find('.element_edit').fadeToggle();
             }
+        else if (action == 'more') {
+            $(div).find('.element_more').fadeToggle();
+            }
         else {
             $.getJSON($SCRIPT_ROOT + '/syncs/action',
                 form,
@@ -43,7 +46,7 @@ $(function() {
                     if (data.result == 'remove') {
                         $(div).fadeOut();
                         }
-                    else {
+                    else if (data.result) {
                         location.reload();
                         }
                     });

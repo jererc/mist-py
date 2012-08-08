@@ -1,5 +1,8 @@
 import logging
 
+from pymongo.objectid import ObjectId
+from pymongo import ASCENDING
+
 from syncd import settings
 from syncd.util import get_db
 
@@ -9,14 +12,20 @@ from systools.network.ssh import Host
 logger = logging.getLogger(__name__)
 
 
-def get_users():
-    res = []
-    for user in get_db()[settings.COL_USERS].find():
-        res.append({
-            'username': user['username'],
-            'password': user['password'],
-            })
-    return res
+def get_users(spec=None):
+    if not spec:
+        spec = {}
+    return [r for r in get_db()[settings.COL_USERS].find(spec,
+            sort=[('name', ASCENDING)])]
+
+def get_user(id=None, name=None, spec=None):
+    if not spec:
+        spec = {}
+    if id:
+        spec['_id'] = ObjectId(id)
+    if name:
+        spec['name'] = name
+    return get_db()[settings.COL_USERS].find_one(spec)
 
 def get_host(**kwargs):
     user = None

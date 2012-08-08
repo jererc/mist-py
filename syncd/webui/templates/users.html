@@ -15,7 +15,7 @@
                 <table>
                     <tr>
                         <td class="title">
-                            <h2>{{ item.username }}</h2>
+                            {{ item.name }}
                         </td>
                         <td class="td_button">
                             <a href=""><img class="img_button" src="{{ url_for('static', filename='edit.png') }}" alt="edit"></img></a>
@@ -33,6 +33,10 @@
             <div class="element_edit" style="display: none;">
                 <table>
                     <tr>
+                        <td class="details_title">Name:</td>
+                        <td><input type="text" name="name" size="30" value="{{ item.name }}" /></td>
+                    </tr>
+                    <tr>
                         <td class="details_title">Username:</td>
                         <td><input type="text" name="username" size="30" value="{{ item.username }}" /></td>
                     </tr>
@@ -43,6 +47,14 @@
                     <tr>
                         <td class="details_title">Port:</td>
                         <td><input type="number" name="port" size="2" min="1" max="65536" value="{% if item.port %}{{ item.port }}{% else %}22{% endif %}" /></td>
+                    </tr>
+                    <tr>
+                        <td class="details_title">Path video:</td>
+                        <td><input type="text" name="path_video" size="30" value="{{ item.paths.video }}" /></td>
+                    </tr>
+                    <tr>
+                        <td class="details_title">Path audio:</td>
+                        <td><input type="text" name="path_audio" size="30" value="{{ item.paths.audio }}" /></td>
                     </tr>
                 </table>
             </div>

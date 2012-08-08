@@ -1,16 +1,17 @@
 #!/usr/bin/env python
-import os
+import os.path
 import sys
 import time
 from multiprocessing import Process, Queue
 from glob import glob
-import signal
 import traceback
 import logging
 from logging.handlers import RotatingFileHandler
 
 from syncd import settings
 from syncd.util import get_db, update_host
+
+from systools.system import pgrp
 
 
 WORKERS_DIR = 'workers'
@@ -97,14 +98,8 @@ def get_workers():
             workers[worker] = {'target': target}
     return workers
 
+@pgrp()
 def main():
-    os.setpgrp()
-
-    def sigint_handler(signum, frame):
-        os.killpg(os.getpgrp(), 9)
-
-    signal.signal(signal.SIGTERM, sigint_handler)
-
     queue = Queue(-1)
     listener = Process(target=listener_process,
             args=(queue, listener_configurer))

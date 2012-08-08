@@ -15,7 +15,7 @@
                 <table>
                     <tr>
                         <td class="title">
-                            <h2>{{ item.src_str }} to {{ item.dst_str }}</h2>
+                            {{ item.src_str }} to {{ item.dst_str }}
                         </td>
                         <td style="width: 200px;">
                             {% if item.finished %}
@@ -24,6 +24,9 @@
                         </td>
                         <td class="td_button">
                             <a href=""><img class="img_button" src="{{ url_for('static', filename='edit.png') }}" alt="edit"></img></a>
+                        </td>
+                        <td class="td_button">
+                            <a href=""><img class="img_button" src="{{ url_for('static', filename='more.png') }}" alt="more"></img></a>
                         </td>
                         <td class="td_button">
                             <a href=""><img class="img_button" src="{{ url_for('static', filename='save.png') }}" alt="save"></img></a>
@@ -39,7 +42,6 @@
             </div>
 
             <div class="element_edit" style="display: none;">
-
                 <table>
                     <tr>
                         {% for caption, type in [('Source', 'src'), ('Destination', 'dst')] %}
@@ -51,8 +53,8 @@
                                         <td>
                                             <select title="user" name="{{ type }}_user">
                                                 <option value="">any</option>
-                                                {% for user in users %}
-                                                    <option value="{{ user['username'] }} {{ user['password'] }}"{% if item[type]['username'] == user['username'] and item[type]['password'] == user['password'] %} selected="true"{% endif %}>{{ user['username'] }} / {{ user['password'] }}</option>
+                                                {% for user in session.users %}
+                                                    <option value="{{ user._id }}"{% if item[type]['username'] == user['username'] and item[type]['password'] == user['password'] %} selected="true"{% endif %}>{{ user.name }}</option>
                                                 {% endfor %}
                                             </select>
                                         </td>
@@ -94,7 +96,9 @@
                         </td>
                     </tr>
                 </table>
+            </div>
 
+            <div class="element_more" style="display: none;">
                 {% if item.started %}
                     <h3>Started:</h3> {{ item.started }}
                 {% endif %}
@@ -107,7 +111,6 @@
                 {% if item.log %}
                     <h3>Log:</h3><pre>{{ item.log }}</pre>
                 {% endif %}
-
             </div>
 
         </form>
