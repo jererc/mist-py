@@ -2,7 +2,7 @@ from datetime import datetime
 from copy import deepcopy
 import logging
 
-from syncd import env, settings, get_db, get_factory
+from syncd import settings, get_db, get_factory
 
 from systools.network import get_hosts
 from systools.system import loop, timeout, timer

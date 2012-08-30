@@ -11,6 +11,7 @@ from systools.network import get_ip
 from systools.network.ssh import Host
 
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 db_con = Connection()
 

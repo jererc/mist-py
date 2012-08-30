@@ -2,7 +2,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
-from syncd import env, settings, get_factory
+from syncd import settings, get_factory
 
 from systools.system import get_package_modules
 

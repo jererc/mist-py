@@ -4,7 +4,7 @@ import logging
 
 from pymongo import ASCENDING
 
-from syncd import env, settings, get_host, get_db, get_factory
+from syncd import settings, get_host, get_db, get_factory
 
 from systools.system import loop, timer, dotdict
 from systools.network import get_ip
