@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from datetime import datetime
 from copy import deepcopy
 import logging
@@ -133,7 +132,3 @@ def find_hosts():
 
 def main():
     find_hosts()
-
-
-if __name__ == '__main__':
-    main()
