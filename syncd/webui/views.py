@@ -5,10 +5,9 @@ from flask import session, request, url_for, render_template, redirect, jsonify
 from pymongo.objectid import ObjectId
 from pymongo import ASCENDING
 
+from syncd import get_db, get_users, get_user
 from syncd.settings import COL_SYNCS, COL_USERS, COL_HOSTS
-from syncd.util import get_db
 from syncd.webui import app
-from syncd import get_users, get_user
 
 
 @app.route('/')

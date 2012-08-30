@@ -27,7 +27,7 @@
             <table>
 
                 <tr>
-                    <td class="details_title2"><b>seen:</b></td>
+                    <td class="details_title2">seen:</td>
                     <td>{{ item.seen }}</td>
                 </tr>
 
@@ -37,7 +37,7 @@
                     </tr>
                     {% for username in item.usernames|sort %}
                         <tr>
-                            <td class="details_title2"><b>username:</b></td>
+                            <td class="details_title2">username:</td>
                             <td>{{ username }}</td>
                         </tr>
                         <tr style="height: 10px;"></tr>
@@ -52,7 +52,7 @@
                         {% for info in data %}
                             {% for key, val in info|dictsort %}
                                 <tr>
-                                    <td class="details_title2"><b>{{ key }}:</b></td>
+                                    <td class="details_title2">{{ key }}:</td>
                                     <td>{% if val %}{{ val }}{% endif %}</td>
                                 </tr>
                             {% endfor %}

@@ -5,11 +5,13 @@ import logging
 
 from pymongo import ASCENDING
 
-from syncd import env, settings, get_host
-from syncd.util import get_db
+from syncd import env, settings, get_host, get_db, get_factory
 
-from systools.system import loop, timeout, timer, dotdict
+from systools.system import loop, timer, dotdict
 from systools.network import get_ip
+
+
+WORKERS_LIMIT = 4
 
 
 logger = logging.getLogger(__name__)
@@ -19,15 +21,6 @@ class Sync(dotdict):
     def __init__(self, doc):
         super(Sync, self).__init__(doc)
         self.callable = self.process_rsync
-
-    def validate(self):
-        date = self.get('finished')
-        if date and date + timedelta(hours=self.recurrence) > datetime.utcnow():
-            return
-
-        hour_start = self.get('hour_start') or 0
-        hour_end = self.get('hour_end') or 24
-        return hour_start <= datetime.now().hour < hour_end
 
     def _update_failed(self, session, params):
         col = get_db()[settings.COL_FAILED]
@@ -135,7 +128,6 @@ class Sync(dotdict):
 
         return ' '.join(cmd)
 
-    @timeout(settings.SYNC_TIMEOUT)
     def process_rsync(self):
         '''Sync using rsync.
         '''
@@ -172,7 +164,6 @@ class Sync(dotdict):
 
         self.update(**info)
 
-    @timeout(settings.SYNC_TIMEOUT)
     def process_sftp(self):
         '''Sync using SFTP.
         '''
@@ -229,6 +220,15 @@ class Sync(dotdict):
             logger.info(info['log'])
 
 
+def validate_sync(sync):
+    date = sync.get('finished')
+    if date and date + timedelta(hours=sync['recurrence']) > datetime.utcnow():
+        return
+
+    hour_start = sync.get('hour_start') or 0
+    hour_end = sync.get('hour_end') or 24
+    return hour_start <= datetime.now().hour < hour_end
+
 def clean_failed():
     '''Clean parameters not found collection.
     '''
@@ -248,22 +248,34 @@ def clean_processing():
             safe=True,
             multi=True)
 
-@loop(60)
-@timer()
-def main():
-    clean_processing()
-
-    for res in get_db()[settings.COL_SYNCS].find(
-            sort=[('finished', ASCENDING)],
-            timeout=False):
-        sync = Sync(res)
-        if not sync.validate():
-            continue
-        if not sync.find_hosts():
-            continue
+def process_sync(sync_id):
+    sync = get_db()[settings.COL_SYNCS].find_one({'_id': sync_id})
+    if not sync:
+        return
+    sync = Sync(sync)
+    if sync.find_hosts():
         sync.callable()
 
+@loop(60)
+def process_syncs():
+    clean_processing()
+
+    count = 0
+    for sync in get_db()[settings.COL_SYNCS].find(
+            sort=[('finished', ASCENDING)]):
+        if validate_sync(sync):
+            target = '%s.workers.sync.process_sync' % settings.PACKAGE_NAME
+            get_factory().add(target=target, args=(sync['_id'],),
+                    timeout=settings.SYNC_TIMEOUT)
+
+            count += 1
+            if count == WORKERS_LIMIT:
+                break
+
     clean_failed()
+
+def main():
+    process_syncs()
 
 
 if __name__ == '__main__':

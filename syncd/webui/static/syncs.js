@@ -34,10 +34,10 @@ $(function() {
         form.push({'name': 'action', 'value': action});
 
         if (action == 'edit') {
-            $(div).find('.element_edit').fadeToggle();
+            $(div).find('.element_edit').slideToggle();
             }
         else if (action == 'more') {
-            $(div).find('.element_more').fadeToggle();
+            $(div).find('.element_more').slideToggle();
             }
         else {
             $.getJSON($SCRIPT_ROOT + '/syncs/action',

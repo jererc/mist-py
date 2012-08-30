@@ -7,7 +7,7 @@ $(function() {
         form.push({'name': 'action', 'value': action});
 
         if (action == 'edit') {
-            $(div).find('.element_edit').fadeToggle();
+            $(div).find('.element_edit').slideToggle();
             }
         else {
             $.getJSON($SCRIPT_ROOT + '/users/action',

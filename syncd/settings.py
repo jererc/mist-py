@@ -1,10 +1,11 @@
 from datetime import timedelta
 
 
-DEFAULT_RSYNC_ARGS = ['-ax', '--ignore-errors']
-SYNC_TIMEOUT = 7200     # seconds
-AUTOMOUNT = True
+PACKAGE_NAME = 'syncd'
 
+DEFAULT_RSYNC_ARGS = ['-ax', '--ignore-errors']
+SYNC_TIMEOUT = 3600 * 6     # seconds
+AUTOMOUNT = True
 
 # Db
 DB_NAME = 'syncd'
@@ -12,7 +13,6 @@ COL_USERS = 'users'
 COL_SYNCS = 'syncs'
 COL_HOSTS = 'hosts'
 COL_FAILED = 'failed'
-
 
 DELTA_HOST_ALIVE = timedelta(days=7)
 DELTA_FAILED_USERNAME = timedelta(hours=6)

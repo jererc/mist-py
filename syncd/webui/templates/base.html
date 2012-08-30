@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>syncd</title>
+    <title>mediaui{% if request.endpoint %} - {{ request.endpoint }}{% endif %}</title>
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link href="{{ url_for('static', filename='style.css') }}" media="screen" rel="stylesheet" type="text/css">
@@ -20,11 +20,11 @@
 </head>
 <body>
     <div class="menu_visible">
-        <a href="{{ url_for('add') }}">add</a><br>
-        <a href="{{ url_for('users') }}">users</a><br>
-        <a href="{{ url_for('syncs') }}">syncs</a><br>
-        <a href="{{ url_for('hosts') }}">hosts</a><br>
+        {% for menu in ['add', 'users', 'syncs', 'hosts'] %}
+            <a href="{{ url_for(menu) }}"{% if menu == request.endpoint %} style="color: #555;"{% endif %}>{{ menu }}</a><br>
+        {% endfor %}
     </div>
+
     <div class="content">
         {% block content %}{% endblock %}
     </div>

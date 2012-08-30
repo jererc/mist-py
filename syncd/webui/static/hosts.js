@@ -27,7 +27,7 @@ $(function() {
         var div = $(this).parents('.content_element')[0];
 
         if (action == 'more') {
-            $(div).find('.element_info').fadeToggle();
+            $(div).find('.element_info').slideToggle();
             }
         return false;
         });

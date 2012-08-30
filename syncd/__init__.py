@@ -1,16 +1,30 @@
 import logging
 
 from pymongo.objectid import ObjectId
-from pymongo import ASCENDING
+from pymongo import Connection, ASCENDING
 
 from syncd import settings
-from syncd.util import get_db
 
+from factory import Factory
+
+from systools.network import get_ip
 from systools.network.ssh import Host
 
 
 logger = logging.getLogger(__name__)
+db_con = Connection()
 
+
+def get_db():
+    return db_con[settings.DB_NAME]
+
+def get_localhost():
+    ips = get_ip()
+    if ips:
+        return ips[0]
+
+def get_factory():
+    return Factory(collection=settings.PACKAGE_NAME)
 
 def get_users(spec=None):
     if not spec:
