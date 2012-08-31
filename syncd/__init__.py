@@ -7,7 +7,6 @@ from syncd import settings
 
 from factory import Factory
 
-from systools.network import get_ip
 from systools.network.ssh import Host
 
 
@@ -18,11 +17,6 @@ db_con = Connection()
 
 def get_db():
     return db_con[settings.DB_NAME]
-
-def get_localhost():
-    ips = get_ip()
-    if ips:
-        return ips[0]
 
 def get_factory():
     return Factory(collection=settings.PACKAGE_NAME)

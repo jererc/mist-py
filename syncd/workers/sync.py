@@ -256,7 +256,7 @@ def process_sync(sync_id):
         sync.callable()
 
 @loop(60)
-def process_syncs():
+def run():
     clean_processing()
 
     count = 0
@@ -272,6 +272,3 @@ def process_syncs():
                 break
 
     clean_failed()
-
-def main():
-    process_syncs()

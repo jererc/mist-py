@@ -1,5 +1,4 @@
 from datetime import datetime
-from copy import deepcopy
 import logging
 
 from syncd import settings, get_db, get_factory
@@ -16,9 +15,8 @@ logger = logging.getLogger(__name__)
 @timeout(minutes=10)
 @timer(30)
 def update_host(host):
-    db = get_db()
-    col_hosts = db[settings.COL_HOSTS]
-    col_users = db[settings.COL_USERS]
+    col_hosts = get_db()[settings.COL_HOSTS]
+    col_users = get_db()[settings.COL_USERS]
 
     res = col_hosts.find_one({'host': host})
     if not res:
@@ -29,7 +27,7 @@ def update_host(host):
 
     # Clean users
     for key in ('users', 'failed'):
-        for user in deepcopy(res[key]):
+        for user in res[key].keys():
             username, password = user.split(' ', 1)
             if not col_users.find_one({'username': username, 'password': password}):
                 del res[key][user]
@@ -104,7 +102,7 @@ def get_worker(host):
 @loop(minutes=5)
 @timeout(minutes=5)
 @timer(30)
-def find_hosts():
+def run():
     col = get_db()[settings.COL_HOSTS]
     factory = get_factory()
 
@@ -129,6 +127,3 @@ def find_hosts():
 
     for res in col.find({'alive': False}):
         factory.remove(**get_worker(res['host']))
-
-def main():
-    find_hosts()
