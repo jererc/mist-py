@@ -37,27 +37,29 @@ def get_user(id=None, name=None, spec=None):
     return get_db()[settings.COL_USERS].find_one(spec)
 
 def get_host(**kwargs):
-    user = None
     spec = {'alive': True}
 
     if kwargs.get('username') and kwargs.get('password'):
-        user = '%s %s' % (kwargs['username'], kwargs['password'])
-        spec['users.%s' % user] = {'$exists': True}
+        spec['users'] = {'$elemMatch': {
+            'username': kwargs['username'],
+            'password': kwargs['password'],
+            'logged': {'$exists': True},
+            }}
     if kwargs.get('hwaddr'):
         spec['ifconfig'] = {'$elemMatch': {'hwaddr': kwargs['hwaddr']}}
     if kwargs.get('uuid'):
         spec['disks'] = {'$elemMatch': {'uuid': kwargs['uuid']}}
 
-    for res in get_db()[settings.COL_HOSTS].find(spec):
-        for user_, info in res['users'].items():
-            if user and user_ != user:
+    for host in get_db()[settings.COL_HOSTS].find(spec):
+        for user in host['users']:
+            if not user.get('logged'):
                 continue
 
-            username, password = user_.split(' ', 1)
-            port = info.get('port', 22)
+            port = user.get('port', 22)
             try:
-                session = Host(res['host'], username, password, port=port)
-                session.hostname = res['hostname']
+                session = Host(host['host'], user['username'], user['password'],
+                        port=port)
+                session.hostname = host['hostname']
                 return session
             except Exception, e:
-                logger.info('failed to connect to %s:%s@%s:%s: %s', username, password, res['host'], port, e)
+                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host['host'], port, e)

@@ -234,7 +234,10 @@ def _get_params_str(params):
 def hosts():
     items = []
     for res in get_db()[COL_HOSTS].find():
-        res['usernames'] = [user.split(' ', 1)[0] for user in res.get('users', [])]
+        res['logged_users'] = []
+        for user in res.get('users', []):
+            if user.get('logged'):
+                res['logged_users'].append(user)
         items.append(res)
 
     return render_template('hosts.html', items=items)

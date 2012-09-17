@@ -11,6 +11,19 @@ from systools.network.ssh import Host, TimeoutError
 logger = logging.getLogger(__name__)
 
 
+def _get_user(users, info):
+    for user in users:
+        if info['username'] == user['username'] \
+                and info['password'] == user['password']:
+            return user
+
+def _update_users(users, info):
+    user = _get_user(users, info)
+    if user:
+        user.update(info)
+    else:
+        users.append(info)
+
 @loop(minutes=10)
 @timeout(minutes=10)
 @timer(30)
@@ -22,64 +35,63 @@ def update_host(host):
     if not res:
         return
 
-    res.setdefault('users', {})
-    res.setdefault('failed', {})
+    res.setdefault('users', [])
 
     # Clean users
-    for key in ('users', 'failed'):
-        for user in res[key].keys():
-            username, password = user.split(' ', 1)
-            if not col_users.find_one({'username': username, 'password': password}):
-                del res[key][user]
+    for user in res['users']:
+        if not col_users.find_one({'username': user['username'],
+                'password': user['password']}):
+            res['users'].remove(user)
 
     # Get users
-    users_info = []
-    for user_info in col_users.find():
-        user = '%s %s' % (user_info['username'], user_info['password'])
-        if user in res['users']:
-            users_info.insert(0, user_info)
+    users = []
+    for user in col_users.find():
+        user_ = _get_user(res['users'], user)
+        if user_:
+            users.insert(0, user_)
         else:
-            users_info.append(user_info)
+            users.append(user)
 
     port_service = None
     ports_timeout = []
-    for user_info in users_info:
-        port = user_info.get('port', 22)
+    for user in users:
+        port = user.get('port', 22)
         if port in ports_timeout:
             continue
         if port_service and port != port_service:
             continue
 
-        user = '%s %s' % (user_info['username'], user_info['password'])
-
-        if user not in res['users']:
-            failed = res['failed'].get(user)
-            if failed and failed > datetime.utcnow() - settings.DELTA_FAILED_USERNAME:
+        if not user.get('logged') and user.get('failed'):
+            if user['failed'] > datetime.utcnow() - settings.DELTA_FAILED_USERNAME:
                 continue
 
         try:
             session = Host(host,
-                    user_info['username'],
-                    user_info['password'],
+                    user['username'],
+                    user['password'],
                     port=port)
+            if user.get('failed'):
+                del user['failed']
+            user['logged'] = datetime.utcnow()
+            user['port'] = port
+
         except TimeoutError, e:
             ports_timeout.append(port)
-            if user in res['users']:
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user_info['username'], user_info['password'], host, port, e)
+            if user.get('logged'):
+                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, e)
             continue
+
         except Exception, e:
-            if len(res['users']) > 1 and user in res['users']:
-                del res['users'][user]
-            res['failed'][user] = datetime.utcnow()
-            if user in res['users']:
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user_info['username'], user_info['password'], host, port, e)
+            if user.get('logged'):
+                del user['logged']
+                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, e)
+            user['failed'] = datetime.utcnow()
             continue
+
+        finally:
+            _update_users(res['users'], user)
 
         port_service = port
-
-        res['users'][user] = {'port': port}
-        if user in res['failed']:
-            del res['failed'][user]
 
         updated = res.get('updated')
         if not updated or updated < datetime.utcnow() - settings.DELTA_HOST_UPDATE:

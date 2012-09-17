@@ -31,14 +31,14 @@
                     <td>{{ item.seen }}</td>
                 </tr>
 
-                {% if item.users %}
+                {% if item.logged_users %}
                     <tr>
                         <td class="details_title" colspan="2"><h3>Users:</h3></td>
                     </tr>
-                    {% for username in item.usernames|sort %}
+                    {% for user in item.logged_users %}
                         <tr>
-                            <td class="details_title2">username:</td>
-                            <td>{{ username }}</td>
+                            <td class="details_title2">user:</td>
+                            <td>{{ user.name }}</td>
                         </tr>
                         <tr style="height: 10px;"></tr>
                     {% endfor %}
