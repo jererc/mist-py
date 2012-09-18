@@ -243,7 +243,7 @@ def clean_failed():
 
 def clean_processing():
     get_db()[settings.COL_SYNCS].update({'processing': True},
-            {'$set': {'processing': False, 'started': None}},
+            {'$set': {'processing': False}},
             safe=True,
             multi=True)
 
