@@ -144,10 +144,13 @@ class Sync(dotdict):
                 cmd=cmd,
                 log='started to sync %s with %s' % (self.s_src.path_str, self.s_dst.path_str))
 
-        stdout, return_code = self.s_src.run_ssh(cmd,
-                password=ssh_password,
-                use_sudo=True,
-                timeout=settings.SYNC_TIMEOUT)
+        try:
+            stdout, return_code = self.s_src.run_ssh(cmd,
+                    password=ssh_password,
+                    use_sudo=True,
+                    timeout=settings.SYNC_TIMEOUT)
+        finally:
+            self.s_src.stop_cmd(cmd)
 
         info = {
             'processing': False,
