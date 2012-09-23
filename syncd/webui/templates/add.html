@@ -7,29 +7,29 @@
 {% block content %}
 <div class="content_form">
     <form>
-        <h2>Add a user</h2>
+        <p class="title">Add a user</p>
         <input type="hidden" name="type" value="user" />
         <table>
             <tr>
-                <td class="details_title">Name:</td>
+                <td class="details_title">name:</td>
                 <td>
                     <input type="text" name="name" size="30" value="" />
                 </td>
             </tr>
             <tr>
-                <td class="details_title">Username:</td>
+                <td class="details_title">username:</td>
                 <td>
                     <input type="text" name="username" size="30" value="" />
                 </td>
             </tr>
             <tr>
-                <td class="details_title">Password:</td>
+                <td class="details_title">password:</td>
                 <td>
                     <input type="text" name="password" size="30" value="" />
                 </td>
             </tr>
             <tr>
-                <td class="details_title">Port:</td>
+                <td class="details_title">port:</td>
                 <td>
                     <input type="number" name="port" title="ssh port" size="2" min="1" max="65536" value="22" />
                 </td>
@@ -44,13 +44,13 @@
 
 <div class="content_form">
     <form>
-        <h2>Add a sync</h2>
+        <p class="title">Add a sync</p>
         <input type="hidden" name="type" value="sync" />
         <table>
             <tr>
-                {% for caption, type in [('Source', 'src'), ('Destination', 'dst')] %}
+                {% for caption, type in [('source', 'src'), ('destination', 'dst')] %}
                     <td>
-                        <h3>{{ caption }}:</h3>
+                        <p class="title2">{{ caption }}:</p>
                         <table>
                             <tr>
                                 <td class="details_title">user:</td>
@@ -76,7 +76,7 @@
             </tr>
         </table>
 
-        <h3>Options:</h3>
+        <p class="title2">options:</p>
         <table>
             <tr>
                 <td class="details_title">exclusions:</td>

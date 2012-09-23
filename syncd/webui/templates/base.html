@@ -21,7 +21,7 @@
 <body>
     <div class="menu_visible">
         {% for menu in ['add', 'users', 'syncs', 'hosts'] %}
-            <a href="{{ url_for(menu) }}"{% if menu == request.endpoint %} style="color: #555;"{% endif %}>{{ menu }}</a><br>
+            <a href="{{ url_for(menu) }}"{% if menu == request.endpoint %} class="highlight"{% endif %}>{{ menu }}</a><br>
         {% endfor %}
     </div>
 

@@ -12,6 +12,9 @@ html {
 
 a, a:link, a:active, a:visited {
     text-decoration: none;
+    color: #555;
+    }
+a.highlight {
     color: #bbb;
     }
 a:hover {
@@ -53,9 +56,9 @@ pre {
 
 .menu_visible {
     position: fixed;
-    top: 0px;
-    left: 0px;
-    font-size: 20px;
+    top: 0;
+    left: 0;
+    font-size: 22px;
     }
 .menu_visible a:hover {
     color: #fff;
@@ -63,7 +66,7 @@ pre {
 
 .content {
     background: #272727;
-    margin: 0px 140px 0px 140px;
+    margin: 0 140px 0 140px;
     }
 .content_form {
     border-top: 3px solid #222;
@@ -77,7 +80,11 @@ pre {
     }
 .title {
     width: auto;
-    font-size: 16px;
+    font-size: 18px;
+    }
+.title2 {
+    width: auto;
+    font-size: 14px;
     }
 
 .details_title {

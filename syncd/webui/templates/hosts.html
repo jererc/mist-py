@@ -33,21 +33,20 @@
 
                 {% if item.logged_users %}
                     <tr>
-                        <td class="details_title" colspan="2"><h3>Users:</h3></td>
+                        <td class="details_title" colspan="2"><p class="title2">users</p></td>
                     </tr>
                     {% for user in item.logged_users %}
                         <tr>
                             <td class="details_title2">user:</td>
                             <td>{{ user.name }}</td>
                         </tr>
-                        <tr style="height: 10px;"></tr>
                     {% endfor %}
                 {% endif %}
 
-                {% for title, data in [('Interfaces', item.ifconfig), ('Disks', item.disks)] %}
+                {% for title, data in [('interfaces', item.ifconfig), ('disks', item.disks)] %}
                     {% if data %}
                         <tr>
-                            <td class="details_title" colspan="2"><h3>{{ title }}:</h3></td>
+                            <td class="details_title" colspan="2"><p class="title2">{{ title }}</p></td>
                         </tr>
                         {% for info in data %}
                             {% for key, val in info|dictsort %}
