@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='hosts.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='js/hosts.js') }}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
@@ -17,7 +17,7 @@
                         {{ item.host }}{% if item.hostname %} ({{ item.hostname }}){% endif %}
                     </td>
                     <td class="td_button">
-                        <a href=""><img class="img_button" src="{{ url_for('static', filename='more.png') }}" alt="more"></img></a>
+                        <a href=""><img class="img_button" src="{{ url_for('static', filename='img/more.png') }}" alt="more"></img></a>
                     </td>
                 </tr>
             </table>
