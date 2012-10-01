@@ -78,13 +78,13 @@ def update_host(host):
         except TimeoutError, e:
             ports_timeout.append(port)
             if user.get('logged'):
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, e)
+                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, str(e))
             continue
 
         except Exception, e:
             if user.get('logged'):
                 del user['logged']
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, e)
+                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, str(e))
             user['failed'] = datetime.utcnow()
             continue
 

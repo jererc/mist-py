@@ -212,7 +212,7 @@ class Sync(dotdict):
                 'processing': False,
                 'log': str(e),
                 }
-            logger.error('failed to sync %s with %s: %s', self.s_src.path_str, self.s_dst.path_str, e)
+            logger.error('failed to sync %s with %s: %s', self.s_src.path_str, self.s_dst.path_str, str(e))
 
         self.update(**info)
 

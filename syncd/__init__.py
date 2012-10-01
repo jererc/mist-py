@@ -62,4 +62,4 @@ def get_host(**kwargs):
                 session.hostname = host['hostname']
                 return session
             except Exception, e:
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host['host'], port, e)
+                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host['host'], port, str(e))
