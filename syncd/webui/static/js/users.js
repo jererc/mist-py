@@ -1,15 +1,15 @@
-$(function() {
+function initActions() {
     $('.img_button').bind('click', function() {
         var action = $(this).attr('alt');
         var div = $(this).parents('.content_element')[0];
-        var form = $(this).parents('form').serializeArray();
-        // Add the submit button value
-        form.push({'name': 'action', 'value': action});
 
         if (action == 'edit') {
             $(div).find('.element_edit').slideToggle();
             }
         else {
+            var form = $(this).parents('form').serializeArray();
+            form.push({'name': 'action', 'value': action});
+
             $.getJSON($SCRIPT_ROOT + '/users/action',
                 form,
                 function(data) {
@@ -21,6 +21,11 @@ $(function() {
                         }
                     });
             }
+
         return false;
         });
+    };
+
+$(function() {
+    initActions();
     });

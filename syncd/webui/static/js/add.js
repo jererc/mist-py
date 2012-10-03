@@ -1,4 +1,4 @@
-$(function() {
+function initAddAction() {
     $('.button').bind('click', function() {
         var form = $(this).parents('form').serializeArray();
 
@@ -9,6 +9,11 @@ $(function() {
                     location.reload();
                     }
                 });
+
         return false;
         });
+    };
+
+$(function() {
+    initAddAction();
     });
