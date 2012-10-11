@@ -39,10 +39,9 @@ def get_user(id=None, name=None, spec=None):
 def get_host(**kwargs):
     spec = {'alive': True}
 
-    if kwargs.get('username') and kwargs.get('password'):
+    if kwargs.get('user'):
         spec['users'] = {'$elemMatch': {
-            'username': kwargs['username'],
-            'password': kwargs['password'],
+            '_id': kwargs['user'],
             'logged': {'$exists': True},
             }}
     if kwargs.get('hwaddr'):
@@ -54,12 +53,15 @@ def get_host(**kwargs):
         for user in host['users']:
             if not user.get('logged'):
                 continue
+            user_ = get_user(user['_id'])
+            if not user_:
+                continue
 
-            port = user.get('port', 22)
+            port = user_.get('port', 22)
             try:
-                session = Host(host['host'], user['username'], user['password'],
+                session = Host(host['host'], user_['username'], user_['password'],
                         port=port)
                 session.hostname = host['hostname']
                 return session
             except Exception, e:
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host['host'], port, str(e))
+                logger.info('failed to connect to %s@%s:%s: %s', user_['username'], host['host'], port, str(e))

@@ -1,4 +1,5 @@
 from datetime import datetime
+from copy import deepcopy
 import logging
 
 from syncd import settings, get_db, get_factory
@@ -11,18 +12,22 @@ from systools.network.ssh import Host, TimeoutError
 logger = logging.getLogger(__name__)
 
 
-def _get_user(users, info):
+def _get_user(users, user_id):
     for user in users:
-        if info['username'] == user['username'] \
-                and info['password'] == user['password']:
+        if user['_id'] == user_id:
             return user
 
 def _update_users(users, info):
-    user = _get_user(users, info)
+    user_ = {'_id': info['_id']}
+    if info.get('logged'):
+        user_['logged'] = info.get('logged')
+    if info.get('failed'):
+        user_['failed'] = info.get('failed')
+    user = _get_user(users, info['_id'])
     if user:
-        user.update(info)
+        user.update(user_)
     else:
-        users.append(info)
+        users.append(user_)
 
 @loop(minutes=10)
 @timeout(minutes=10)
@@ -37,57 +42,52 @@ def update_host(host):
 
     res.setdefault('users', [])
 
-    # Clean users
-    for user in res['users']:
-        if not col_users.find_one({'username': user['username'],
-                'password': user['password']}):
+    # Clean host users list
+    for user in res['users'][:]:
+        if not col_users.find_one({'_id': user['_id']}):
             res['users'].remove(user)
 
-    # Get users
+    # Get a list of users to try
     users = []
     for user in col_users.find():
-        user_ = _get_user(res['users'], user)
+        user_ = _get_user(res['users'], user['_id'])
         if user_:
-            users.insert(0, user_)
+            user2 = deepcopy(user_)
+            user2.update(user)
+            users.insert(0, user2)
         else:
             users.append(user)
 
     port_service = None
     ports_timeout = []
+
     for user in users:
         port = user.get('port', 22)
         if port in ports_timeout:
             continue
         if port_service and port != port_service:
             continue
-
         if not user.get('logged') and user.get('failed'):
             if user['failed'] > datetime.utcnow() - settings.DELTA_FAILED_USERNAME:
                 continue
 
         try:
-            session = Host(host,
-                    user['username'],
-                    user['password'],
+            session = Host(host, user['username'], user['password'],
                     port=port)
             if user.get('failed'):
                 del user['failed']
             user['logged'] = datetime.utcnow()
-            user['port'] = port
-
         except TimeoutError, e:
             ports_timeout.append(port)
             if user.get('logged'):
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, str(e))
+                logger.info('failed to connect to %s@%s:%s: %s', user['username'], host, port, str(e))
             continue
-
         except Exception, e:
             if user.get('logged'):
                 del user['logged']
-                logger.info('failed to connect to %s:%s@%s:%s: %s', user['username'], user['password'], host, port, str(e))
+                logger.info('failed to connect to %s@%s:%s: %s', user['username'], host, port, str(e))
             user['failed'] = datetime.utcnow()
             continue
-
         finally:
             _update_users(res['users'], user)
 

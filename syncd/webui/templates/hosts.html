@@ -25,23 +25,12 @@
 
         <div class="element_info" style="display: none;">
             <table>
-
-                <tr>
-                    <td class="details_title2">seen:</td>
-                    <td>{{ item.seen }}</td>
-                </tr>
-
-                {% if item.logged_users %}
+                {% for title, data in [('seen', item.seen), ('users', item.logged_users|join(', '))] %}
                     <tr>
-                        <td class="details_title" colspan="2"><p class="title2">users</p></td>
+                        <td class="details_title2">{{ title }}:</td>
+                        <td>{{ data }}</td>
                     </tr>
-                    {% for user in item.logged_users %}
-                        <tr>
-                            <td class="details_title2">user:</td>
-                            <td>{{ user.name }}</td>
-                        </tr>
-                    {% endfor %}
-                {% endif %}
+                {% endfor %}
 
                 {% for title, data in [('interfaces', item.ifconfig), ('disks', item.disks)] %}
                     {% if data %}

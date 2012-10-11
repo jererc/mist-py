@@ -12,7 +12,6 @@ from systools.network import get_ip
 
 WORKERS_LIMIT = 4
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -112,7 +111,6 @@ class Sync(dotdict):
         if not self.s_dst:
             return
         self.dst_path = self.s_dst.path
-
         return True
 
     def _get_cmd(self):
@@ -124,7 +122,6 @@ class Sync(dotdict):
         if self.get('delete'):
             cmd.append('--delete-excluded' if self.exclusions else '--delete')
         cmd += [self.src_path, self.dst_path]
-
         return ' '.join(cmd)
 
     def process_rsync(self):
@@ -246,9 +243,7 @@ def clean_failed():
 
 def clean_processing():
     get_db()[settings.COL_SYNCS].update({'processing': True},
-            {'$set': {'processing': False}},
-            safe=True,
-            multi=True)
+            {'$set': {'processing': False}}, safe=True, multi=True)
 
 def process_sync(sync_id):
     sync = get_db()[settings.COL_SYNCS].find_one({'_id': sync_id})
@@ -259,9 +254,7 @@ def process_sync(sync_id):
         sync.callable()
 
 @loop(60)
-def run():
-    clean_processing()
-
+def process_syncs():
     count = 0
     for sync in get_db()[settings.COL_SYNCS].find(
             sort=[('finished', ASCENDING)]):
@@ -275,3 +268,7 @@ def run():
                 break
 
     clean_failed()
+
+def run():
+    clean_processing()
+    process_syncs()

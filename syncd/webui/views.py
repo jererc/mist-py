@@ -14,7 +14,6 @@ from syncd.webui import app
 def index():
     return redirect(url_for('syncs'))
 
-
 #
 # Add
 #
@@ -71,7 +70,6 @@ def add_action():
 
     return jsonify(result=result)
 
-
 #
 # Users
 #
@@ -123,7 +121,6 @@ def users_action():
                     result = action
 
     return jsonify(result=result)
-
 
 #
 # Syncs
@@ -197,35 +194,28 @@ def get_sync_status():
 def _get_params(prefix, data):
     res = {}
     for attr in ('user', 'hwaddr', 'uuid', 'path'):
-        value = data.get('%s_%s' % (prefix, attr))
-        if value:
+        val = data.get('%s_%s' % (prefix, attr))
+        if val:
             if attr == 'user':
-                user = get_user(id=value)
-                if user:
-                    res['username'] = user['username']
-                    res['password'] = user['password']
-            else:
-                res[attr] = value
+                val = ObjectId(val)
+            res[attr] = val
     return res
 
 def _validate_params(params):
     if not params.get('path'):
-        return
-    if params.get('username') and not params.get('password'):
-        return
-    if not params.get('username') and not params.get('hwaddr') and not params.get('uuid'):
-        return
+        return False
+    if not (params.get('user') or params.get('hwaddr') or params.get('uuid')):
+        return False
     return True
 
 def _get_params_str(params):
-    username = params.get('username')
-    password = params.get('password')
-    if username and password:
-        res = get_user(spec={'username': username, 'password': password})
-        if res:
-            return res['name']
-    return params.get('hwaddr') or params.get('uuid')
+    user_id = params.get('user')
+    if user_id:
+        user = get_user(user_id)
+        if user:
+            return user['name']
 
+    return params.get('hwaddr') or params.get('uuid')
 
 #
 # Hosts
@@ -237,7 +227,9 @@ def hosts():
         res['logged_users'] = []
         for user in res.get('users', []):
             if user.get('logged'):
-                res['logged_users'].append(user)
+                user_ = get_user(user['_id'])
+                if user_:
+                    res['logged_users'].append(user_['name'])
         items.append(res)
 
     return render_template('hosts.html', items=items)
