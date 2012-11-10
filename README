@@ -11,8 +11,5 @@ Features:
 - mount partitions
 
 
-Start the daemon:
+Start the daemon and webui:
 ./syncd/run.py
-
-Start the webui:
-./run.py
