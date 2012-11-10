@@ -1,22 +1,31 @@
 import logging
 
 from pymongo.objectid import ObjectId
-from pymongo import Connection, ASCENDING
-
-from syncd import settings
+from pymongo import ASCENDING
 
 from factory import Factory
 
-from systools.network.ssh import Host
+from systools.network.ssh import Host as SshHost
+from systools.network import get_ip
+
+from syncd import settings
+from syncd.utils.db import connect, Model
 
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-db_con = Connection()
+connect(settings.DB_NAME)
 
 
-def get_db():
-    return db_con[settings.DB_NAME]
+class User(Model):
+    COL = 'users'
+
+class Host(Model):
+    COL = 'hosts'
+
+class Sync(Model):
+    COL = 'syncs'
+
 
 def get_factory():
     return Factory(collection=settings.PACKAGE_NAME)
@@ -24,8 +33,7 @@ def get_factory():
 def get_users(spec=None):
     if not spec:
         spec = {}
-    return [r for r in get_db()[settings.COL_USERS].find(spec,
-            sort=[('name', ASCENDING)])]
+    return [r for r in User.find(spec, sort=[('name', ASCENDING)])]
 
 def get_user(id=None, name=None, spec=None):
     if not spec:
@@ -34,11 +42,17 @@ def get_user(id=None, name=None, spec=None):
         spec['_id'] = ObjectId(id)
     if name:
         spec['name'] = name
-    return get_db()[settings.COL_USERS].find_one(spec)
+    return User.find_one(spec)
 
 def get_host(**kwargs):
     spec = {'alive': True}
-
+    if kwargs.get('host'):
+        host = kwargs['host']
+        if host == 'localhost':
+            host = get_ip()
+        elif not isinstance(host, (list, tuple)):
+            host = [host]
+        spec['host'] = {'$in': get_ip()}
     if kwargs.get('user'):
         spec['users'] = {'$elemMatch': {
             '_id': kwargs['user'],
@@ -49,7 +63,7 @@ def get_host(**kwargs):
     if kwargs.get('uuid'):
         spec['disks'] = {'$elemMatch': {'uuid': kwargs['uuid']}}
 
-    for host in get_db()[settings.COL_HOSTS].find(spec):
+    for host in Host.find(spec):
         for user in host['users']:
             if not user.get('logged'):
                 continue
@@ -59,9 +73,9 @@ def get_host(**kwargs):
 
             port = user_.get('port', 22)
             try:
-                session = Host(host['host'], user_['username'], user_['password'],
-                        port=port)
-                session.hostname = host['hostname']
-                return session
+                client = SshHost(host['host'],
+                        user_['username'], user_['password'], port=port)
+                client.hostname = host['hostname']
+                return client
             except Exception, e:
-                logger.info('failed to connect to %s@%s:%s: %s', user_['username'], host['host'], port, str(e))
+                logger.info('failed to connect to %s@%s:%s: %s' % (user_['username'], host['host'], port, str(e)))

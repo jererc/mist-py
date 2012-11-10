@@ -12,7 +12,7 @@ WORKERS_DIR = 'workers'
 
 def main():
     factory = get_factory()
-    factory.drop()
+    factory.remove(daemon=True)
 
     formatter = logging.Formatter(settings.LOG_FORMAT)
 

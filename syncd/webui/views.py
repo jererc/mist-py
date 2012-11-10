@@ -5,8 +5,7 @@ from flask import session, request, url_for, render_template, redirect, jsonify
 from pymongo.objectid import ObjectId
 from pymongo import ASCENDING
 
-from syncd import get_db, get_users, get_user
-from syncd.settings import COL_SYNCS, COL_USERS, COL_HOSTS
+from syncd import get_users, get_user, User, Host, Sync
 from syncd.webui import app
 
 
@@ -25,9 +24,7 @@ def add():
 def add_action():
     result = None
 
-    db = get_db()
     add_type = request.args.get('type')
-
     if add_type == 'user':
         username = request.args.get('username')
         password = request.args.get('password')
@@ -44,9 +41,9 @@ def add_action():
                     doc,
                     ],
                 }
-            if not db[COL_USERS].find_one(spec):
+            if not User.find_one(spec):
                 doc['name'] = name
-                db[COL_USERS].insert(doc, safe=True)
+                User.insert(doc, safe=True)
                 result = True
 
     elif add_type == 'sync':
@@ -59,13 +56,13 @@ def add_action():
             'delete': 'delete' in request.args,
             'recurrence': int(request.args.get('recurrence')),
             }
-        for hour in ('hour_start', 'hour_end'):
+        for hour in ('hour_begin', 'hour_end'):
             val = int(request.args.get(hour))
             params[hour] = val if val >= 0 else None
 
         if _validate_params(params['src']) and _validate_params(params['dst']):
-            if not db[COL_SYNCS].find_one(params):
-                db[COL_SYNCS].insert(params, safe=True)
+            if not Sync.find_one(params):
+                Sync.insert(params, safe=True)
                 result = True
 
     return jsonify(result=result)
@@ -76,7 +73,7 @@ def add_action():
 @app.route('/users')
 def users():
     items = []
-    for res in get_db()[COL_USERS].find(sort=[('name', ASCENDING)]):
+    for res in User.find(sort=[('name', ASCENDING)]):
         if not res.get('paths'):
             res['paths'] = {}
         items.append(res)
@@ -90,7 +87,7 @@ def users_action():
     id = request.args.get('id')
     if id:
         if action == 'remove':
-            get_db()[COL_USERS].remove({'_id': ObjectId(id)})
+            User.remove({'_id': ObjectId(id)}, safe=True)
             result = action
 
         elif action == 'save':
@@ -110,13 +107,13 @@ def users_action():
                         doc,
                         ],
                     }
-                if not get_db()[COL_USERS].find_one(spec):
+                if not User.find_one(spec):
                     doc['name'] = name
                     doc['paths'] = {
                         'audio': request.args.get('path_audio', ''),
                         'video': request.args.get('path_video', ''),
                         }
-                    get_db()[COL_USERS].update({'_id': ObjectId(id)},
+                    User.update({'_id': ObjectId(id)},
                             {'$set': doc}, safe=True)
                     result = action
 
@@ -130,7 +127,7 @@ def syncs():
     session['users'] = get_users()
 
     items = []
-    for res in get_db()[COL_SYNCS].find():
+    for res in Sync.find():
         res.update({
                 'src_str': _get_params_str(res['src']),
                 'dst_str': _get_params_str(res['dst']),
@@ -147,12 +144,12 @@ def syncs_action():
     id = request.args.get('id')
     if id:
         if action == 'reset':
-            get_db()[COL_SYNCS].update({'_id': ObjectId(id)},
-                    {'$unset': {'finished': True}}, safe=True)
+            Sync.update({'_id': ObjectId(id)},
+                    {'$unset': {'processed': True}}, safe=True)
             result = action
 
         elif action == 'remove':
-            get_db()[COL_SYNCS].remove({'_id': ObjectId(id)})
+            Sync.remove({'_id': ObjectId(id)})
             result = action
 
         elif action == 'save':
@@ -165,12 +162,13 @@ def syncs_action():
                 'delete': 'delete' in request.args,
                 'recurrence': int(request.args.get('recurrence')),
                 }
-            for hour in ('hour_start', 'hour_end'):
+            for hour in ('hour_begin', 'hour_end'):
                 val = int(request.args.get(hour))
                 params[hour] = val if val >= 0 else None
 
             if _validate_params(params['src']) and _validate_params(params['dst']):
-                get_db()[COL_SYNCS].update({'_id': ObjectId(id)}, {'$set': params}, safe=True)
+                Sync.update({'_id': ObjectId(id)},
+                        {'$set': params}, safe=True)
                 result = action
 
     return jsonify(result=result)
@@ -180,7 +178,7 @@ def get_sync_status():
     result = None
     id = request.args.get('id')
 
-    res = get_db()[COL_SYNCS].find_one({'_id': ObjectId(id)})
+    res = Sync.find_one({'_id': ObjectId(id)})
     if res:
         if res.get('processing') == True:
             result = 'processing'
@@ -223,7 +221,7 @@ def _get_params_str(params):
 @app.route('/hosts')
 def hosts():
     items = []
-    for res in get_db()[COL_HOSTS].find():
+    for res in Host.find():
         res['logged_users'] = []
         for user in res.get('users', []):
             if user.get('logged'):
@@ -238,7 +236,7 @@ def hosts():
 def get_host_status():
     result = None
     id = request.args.get('id')
-    res = get_db()[COL_HOSTS].find_one({'_id': ObjectId(id)})
+    res = Host.find_one({'_id': ObjectId(id)})
     if res and res.get('alive'):
         if res.get('users'):
             result = True

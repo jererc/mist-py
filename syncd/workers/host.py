@@ -2,11 +2,12 @@ from datetime import datetime
 from copy import deepcopy
 import logging
 
-from syncd import settings, get_db, get_factory
-
 from systools.network import get_hosts
 from systools.system import loop, timeout, timer
-from systools.network.ssh import Host, TimeoutError
+from systools.network.ssh import Host as SshHost
+from systools.network.ssh import TimeoutError
+
+from syncd import settings, get_factory, User, Host
 
 
 logger = logging.getLogger(__name__)
@@ -33,23 +34,19 @@ def _update_users(users, info):
 @timeout(minutes=10)
 @timer(30)
 def update_host(host):
-    col_hosts = get_db()[settings.COL_HOSTS]
-    col_users = get_db()[settings.COL_USERS]
-
-    res = col_hosts.find_one({'host': host})
+    res = Host.find_one({'host': host})
     if not res:
         return
-
     res.setdefault('users', [])
 
     # Clean host users list
     for user in res['users'][:]:
-        if not col_users.find_one({'_id': user['_id']}):
+        if not User.find_one({'_id': user['_id']}):
             res['users'].remove(user)
 
     # Get a list of users to try
     users = []
-    for user in col_users.find():
+    for user in User.find():
         user_ = _get_user(res['users'], user['_id'])
         if user_:
             user2 = deepcopy(user_)
@@ -72,7 +69,7 @@ def update_host(host):
                 continue
 
         try:
-            session = Host(host, user['username'], user['password'],
+            session = SshHost(host, user['username'], user['password'],
                     port=port)
             if user.get('failed'):
                 del user['failed']
@@ -102,7 +99,7 @@ def update_host(host):
                 'updated': datetime.utcnow(),
                 })
 
-    col_hosts.save(res, safe=True)
+    Host.save(res, safe=True)
 
 def get_worker(host):
     return {
@@ -115,27 +112,24 @@ def get_worker(host):
 @timeout(minutes=5)
 @timer(30)
 def run():
-    col = get_db()[settings.COL_HOSTS]
-    factory = get_factory()
-
     hosts = get_hosts()
     if hosts is None:
         logger.debug('failed to find hosts')
         return
 
+    factory = get_factory()
     for host in hosts:
-        col.update({'host': host}, {'$set': {
+        Host.update({'host': host}, {'$set': {
                 'alive': True,
                 'seen': datetime.utcnow(),
                 }}, upsert=True, safe=True)
 
         factory.add(**get_worker(host))
 
-    col.update({'host': {'$nin': hosts}},
+    Host.update({'host': {'$nin': hosts}},
             {'$set': {'alive': False}}, safe=True, multi=True)
-
-    col.remove({'seen': {'$lt': datetime.utcnow() - settings.DELTA_HOST_ALIVE}},
+    Host.remove({'seen': {'$lt': datetime.utcnow() - settings.DELTA_HOST_ALIVE}},
             safe=True)
 
-    for res in col.find({'alive': False}):
+    for res in Host.find({'alive': False}):
         factory.remove(**get_worker(res['host']))

@@ -18,8 +18,8 @@
                             {{ item.src_str }} to {{ item.dst_str }}
                         </td>
                         <td style="width: 200px;">
-                            {% if item.finished %}
-                                {{ item.finished }}
+                            {% if item.processed %}
+                                {{ item.processed }}
                             {% endif%}
                         </td>
                         <td class="td_button">
@@ -91,7 +91,7 @@
                     <tr>
                         <td class="details_title">time range:</td>
                         <td>
-                            <input type="number" name="hour_start" title="hour before which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_start %}{{ item.hour_start }}{% else %}-1{% endif %}" /> to
+                            <input type="number" name="hour_begin" title="hour before which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_begin %}{{ item.hour_begin }}{% else %}-1{% endif %}" /> to
                             <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_end %}{{ item.hour_end }}{% else %}-1{% endif %}" />
                         </td>
                     </tr>
@@ -100,21 +100,11 @@
 
             <div class="element_more" style="display: none;">
                 <table>
-                    {% for title, val in [('started', item.started), ('finished', item.finished), ('command', item.cmd)] %}
-                        {% if val %}
-                            <tr>
-                                <td class="details_title">{{ title }}:</td>
-                                <td>{{ val }}</td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if item.log %}
+                    {% for key, val in [('Processed', item.processed), ('Reserved', item.reserved)] %}
                         <tr>
-                            <td class="details_title">log:</td>
-                            <td><pre>{{ item.log }}</pre></td>
+                            <td class="details_title">{{ key }}:</td><td>{% if val %}{{ val }}{% else %}-{% endif %}</td>
                         </tr>
-                    {% endif %}
+                    {% endfor %}
                 </table>
             </div>
 
