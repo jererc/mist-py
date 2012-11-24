@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>syncd{% if request.endpoint %} - {{ request.endpoint }}{% endif %}</title>
+    <title>{{ config.PACKAGE_NAME }}{% if request.endpoint %} - {{ request.endpoint }}{% endif %}</title>
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}">
     <link href="{{ url_for('static', filename='css/style.css') }}" media="screen" rel="stylesheet" type="text/css">
@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="menu_visible">
-        {% for menu in ['add', 'users', 'syncs', 'hosts'] %}
+        {% for menu in ['hosts', 'users', 'syncs'] %}
             <a href="{{ url_for(menu) }}"{% if menu == request.endpoint %} class="highlight"{% endif %}>{{ menu }}</a><br>
         {% endfor %}
     </div>

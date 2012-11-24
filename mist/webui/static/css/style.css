@@ -1,0 +1,148 @@
+html, body {
+    background: #222;
+    margin: 0;
+    padding: 0;
+    color: #bbb;
+    font: 12px helvetica, arial, sans-serif;
+    font-weight: lighter;
+    }
+
+html {
+    overflow-y: scroll;
+    }
+
+a, a:link, a:active, a:visited {
+    text-decoration: none;
+    color: #555;
+    }
+a.highlight {
+    color: #bbb;
+    }
+a:hover {
+    color: #fff;
+    }
+
+table {
+    border: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    }
+
+form {
+    margin: 0;
+    padding: 0;
+    }
+input, select, button, textarea {
+    border-radius: 2px;
+    background: #333;
+    border: 0;
+    color: #888;
+    font: 12px helvetica, arial, sans-serif;
+    resize: none;
+    }
+
+pre {
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+    width: 100%;
+    margin: 0;
+    padding: 4px;
+    overflow: auto;
+    font: 11px "Lucida Console", Monaco, monospace;
+    }
+
+.menu_visible {
+    position: fixed;
+    top: 0;
+    left: 0;
+    font-size: 24px;
+    }
+
+.content {
+    margin: 0 160px 0 160px;
+    }
+.content_div {
+    margin-top: 2px;
+    background: #272727;
+    }
+.content_element {
+    position: relative;
+    padding: 8px;
+    }
+.content_new {
+    background: #222;
+    padding: 8px;
+    }
+.element_info, .element_edit, .element_details, .element_new {
+    display: none;
+    padding: 8px;
+    }
+.element_highlight {
+    background: #2d2d2d;
+    }
+.element_actions {
+    display: none;
+    position: absolute;
+    padding: 8px;
+    right: 4px;
+    top: 0;
+    }
+.element_new_actions {
+    padding: 8px;
+    text-align: center;
+    }
+.save_action {
+    display: none;
+    }
+
+.title {
+    font-size: 16px;
+    }
+.date {
+    width: 200px;
+    padding-right: 100px;
+    }
+.details_title {
+    width: 160px;
+    vertical-align: top;
+    }
+.details_title_sub {
+    padding-left: 20px;
+    }
+.img_button {
+    height: 20px;
+    }
+
+.host_status, .sync_status {
+    display: inline-block;
+    width: 60px;
+    margin-right: 4px;
+    padding: 2px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -o-border-radius: 3px;
+    -ms-border-radius: 3px;
+    -khtml-border-radius: 3px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 1px rgba(25, 25, 25, 0.7);
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    }
+.host_up, .sync_ok {
+    background: green;
+    }
+.host_down, .sync_pending {
+    background: red;
+    }
+.details_table {
+    border: 1px dashed #666;
+    padding: 8px;
+    margin-bottom: 8px;
+    }

@@ -1,15 +1,4 @@
-Data sync over SSH.
-
-
-Features:
-
-- synchronize data between hosts
-- handle devices with stripped down OS (e.g.: stock Android phone)
-- allow both remote source and destination
-- discover lan hosts
-- discover partitions from a user, uuid or mac address
-- mount partitions
-
+Data sync between devices.
 
 Start the daemon and webui:
-./syncd/run.py
+./mist/run.py

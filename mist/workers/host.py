@@ -7,7 +7,7 @@ from systools.system import loop, timeout, timer
 from systools.network.ssh import Host as SshHost
 from systools.network.ssh import TimeoutError
 
-from syncd import settings, get_factory, User, Host
+from mist import settings, get_factory, User, Host
 
 
 logger = logging.getLogger(__name__)

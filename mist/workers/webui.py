@@ -1,7 +1,7 @@
 from systools.system import webapp
 
-from syncd import settings
-from syncd.webui import app
+from mist import settings
+from mist.webui import app
 
 
 def run():

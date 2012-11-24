@@ -6,7 +6,7 @@ from transfer import Transfer
 
 from systools.system import loop, timer
 
-from syncd import settings, get_factory, get_host, Sync
+from mist import settings, get_factory, get_host, Sync
 
 
 WORKERS_LIMIT = 4

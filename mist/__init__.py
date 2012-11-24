@@ -8,8 +8,8 @@ from factory import Factory
 from systools.network.ssh import Host as SshHost
 from systools.network import get_ip
 
-from syncd import settings
-from syncd.utils.db import connect, Model
+from mist import settings
+from mist.utils.db import connect, Model
 
 
 logging.basicConfig(level=logging.DEBUG)
