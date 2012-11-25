@@ -115,9 +115,10 @@ def syncs():
     now = datetime.utcnow()
     items = []
     for res in Sync.find():
-        status = 'ok'
-        if res['reserved'] and res['reserved'] < now:
-            status = 'pending'
+        if res.get('reserved') and res['reserved'] > now:
+            res['status'] = 'ok'
+        else:
+            res['status'] = 'pending'
         res.update({
                 'src_str': _get_params_str(res['src']),
                 'dst_str': _get_params_str(res['dst']),
@@ -180,7 +181,7 @@ def update_sync():
 def reset_sync():
     id = request.args.get('id')
     Sync.update({'_id': ObjectId(id)},
-            {'$unset': {'processed': True}}, safe=True)
+            {'$unset': {'reserved': True}}, safe=True)
     return jsonify(result=True)
 
 @app.route('/syncs/remove')

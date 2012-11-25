@@ -88,8 +88,8 @@ pre {
     display: none;
     position: absolute;
     padding: 8px;
-    right: 4px;
     top: 0;
+    right: 0;
     }
 .element_new_actions {
     padding: 8px;
@@ -119,7 +119,7 @@ pre {
 
 .host_status, .sync_status {
     display: inline-block;
-    width: 60px;
+    width: 70px;
     margin-right: 4px;
     padding: 2px;
     -moz-border-radius: 3px;
@@ -138,8 +138,11 @@ pre {
 .host_up, .sync_ok {
     background: green;
     }
-.host_down, .sync_pending {
+.host_down {
     background: red;
+    }
+.sync_pending {
+    background: #708090;
     }
 .details_table {
     border: 1px dashed #666;
