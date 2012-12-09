@@ -5,7 +5,7 @@ function initActions() {
         });
     $('.content_element').mouseleave(function() {
         $(this).removeClass('element_highlight');
-        $(this).find('.element_info').slideUp('fast');
+        $(this).find('.element_info').slideUp('slow');
         });
 
     $('.img_button[alt="edit"]').bind('click', function() {

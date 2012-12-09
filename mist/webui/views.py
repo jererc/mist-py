@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 
 from flask import session, request, url_for, render_template, redirect, jsonify
@@ -27,6 +27,7 @@ def hosts():
                 user_ = get_user(user['_id'])
                 if user_:
                     res['logged_users'].append(user_['name'])
+
         items.append(res)
 
     return render_template('hosts.html', items=items)
@@ -52,7 +53,16 @@ def users():
     for res in User.find(sort=[('name', ASCENDING)]):
         if not res.get('paths'):
             res['paths'] = {}
+        if Host.find_one({'users': {'$elemMatch': {
+                '_id': res['_id'],
+                'logged': {'$exists': True},
+                }}}):
+            res['status'] = 'up'
+        else:
+            res['status'] = 'down'
+
         items.append(res)
+
     return render_template('users.html', items=items)
 
 @app.route('/users/add')
@@ -115,15 +125,13 @@ def syncs():
     now = datetime.utcnow()
     items = []
     for res in Sync.find():
-        if res.get('reserved') and res['reserved'] > now:
+        date_ = res.get('processed')
+        if  date_ and date_ + timedelta(hours=res['recurrence']) > now:
             res['status'] = 'ok'
         else:
             res['status'] = 'pending'
-        res.update({
-                'src_str': _get_params_str(res['src']),
-                'dst_str': _get_params_str(res['dst']),
-                'status': status,
-                })
+        res['src_str'] = _get_params_str(res['src'])
+        res['dst_str'] = _get_params_str(res['dst'])
         items.append(res)
 
     return render_template('syncs.html', items=items)

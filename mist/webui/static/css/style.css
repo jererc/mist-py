@@ -55,15 +55,15 @@ pre {
     font: 11px "Lucida Console", Monaco, monospace;
     }
 
-.menu_visible {
+.main_menu {
     position: fixed;
-    top: 0;
+    z-index: 101;
     left: 0;
-    font-size: 24px;
+    top: 0;
+    font-size: 22px;
     }
-
 .content {
-    margin: 0 160px 0 160px;
+    margin: 80px 160px 0 160px;
     }
 .content_div {
     margin-top: 2px;
@@ -101,6 +101,7 @@ pre {
 
 .title {
     font-size: 16px;
+    vertical-align: bottom;
     }
 .date {
     width: 200px;
@@ -108,7 +109,6 @@ pre {
     }
 .details_title {
     width: 160px;
-    vertical-align: top;
     }
 .details_title_sub {
     padding-left: 20px;
@@ -117,7 +117,7 @@ pre {
     height: 20px;
     }
 
-.host_status, .sync_status {
+.host_status, .sync_status, .user_status {
     display: inline-block;
     width: 70px;
     margin-right: 4px;
@@ -135,10 +135,10 @@ pre {
     text-decoration: none;
     color: white;
     }
-.host_up, .sync_ok {
+.host_up, .sync_ok, .user_up {
     background: green;
     }
-.host_down {
+.host_down, .user_down {
     background: red;
     }
 .sync_pending {
