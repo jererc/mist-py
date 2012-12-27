@@ -68,14 +68,13 @@
                         <td class="details_title">Port:</td>
                         <td><input type="number" name="port" size="2" min="1" max="65536" value="{% if item.port %}{{ item.port }}{% else %}22{% endif %}" /></td>
                     </tr>
-                    <tr>
-                        <td class="details_title">Path video:</td>
-                        <td><input type="text" name="path_video" size="30" value="{{ item.paths.video }}" /></td>
-                    </tr>
-                    <tr>
-                        <td class="details_title">Path audio:</td>
-                        <td><input type="text" name="path_audio" size="30" value="{{ item.paths.audio }}" /></td>
-                    </tr>
+
+                    {% for category in ('movies', 'tv', 'music') %}
+                        <tr>
+                            <td class="details_title">Path {{ category }}:</td>
+                            <td><input type="text" name="path_{{ category }}" size="30" value="{{ item.paths[category] }}" /></td>
+                        </tr>
+                    {% endfor %}
                 </table>
             </div>
 

@@ -35,13 +35,9 @@ def hosts():
 @app.route('/hosts/status')
 def get_host_status():
     result = None
-    id = request.args.get('id')
-    res = Host.find_one({'_id': ObjectId(id)})
+    res = Host.find_one({'_id': ObjectId(request.args['id'])})
     if res and res.get('alive'):
-        if res.get('users'):
-            result = True
-        else:
-            result = False
+        result = True if res.get('users') else False
     return jsonify(result=result)
 
 #
@@ -93,17 +89,16 @@ def update_user():
     username = request.args.get('username')
     password = request.args.get('password')
     doc = {
-        '_id': ObjectId(request.args.get('id')),
+        '_id': ObjectId(request.args['id']),
         'name': request.args.get('name') or '%s %s' % (username, password),
         'username': username,
         'password': password,
         'port': int(request.args.get('port')),
+        'paths': {},
         }
     if doc['username'] and doc['password']:
-        doc['paths'] = {
-            'audio': request.args.get('path_audio', ''),
-            'video': request.args.get('path_video', ''),
-            }
+        for category in ('movies', 'tv', 'music'):
+            doc['paths'][category] = request.args.get('path_%s' % category, '')
         User.save(doc, safe=True)
         result = True
 
@@ -111,8 +106,7 @@ def update_user():
 
 @app.route('/users/remove')
 def remove_action():
-    id = request.args.get('id')
-    User.remove({'_id': ObjectId(id)}, safe=True)
+    User.remove({'_id': ObjectId(request.args['id'])}, safe=True)
     return jsonify(result=True)
 
 #
@@ -132,6 +126,8 @@ def syncs():
             res['status'] = 'pending'
         res['src_str'] = _get_params_str(res['src'])
         res['dst_str'] = _get_params_str(res['dst'])
+        if isinstance(res['src']['path'], (list, tuple)):
+            res['src']['path'] = ', '.join(res['src']['path'])
         items.append(res)
 
     return render_template('syncs.html', items=items)
@@ -140,23 +136,10 @@ def syncs():
 def add_sync():
     result = None
 
-    exclusions = request.args.get('exclusions')
-    exclusions = re.split(r'[,\s]+', exclusions) if exclusions else []
-    params = {
-        'src': _get_params('src', request.args),
-        'dst': _get_params('dst', request.args),
-        'exclusions': exclusions,
-        'delete': 'delete' in request.args,
-        'recurrence': int(request.args.get('recurrence')),
-        }
-    for hour in ('hour_begin', 'hour_end'):
-        val = int(request.args.get(hour))
-        params[hour] = val if val >= 0 else None
-
-    if _validate_params(params['src']) and _validate_params(params['dst']):
-        if not Sync.find_one(params):
-            Sync.insert(params, safe=True)
-            result = True
+    params = _get_sync_params(request.args)
+    if params and not Sync.find_one(params):
+        Sync.insert(params, safe=True)
+        result = True
 
     return jsonify(result=result)
 
@@ -164,22 +147,9 @@ def add_sync():
 def update_sync():
     result = None
 
-    id = request.args.get('id')
-    exclusions = request.args.get('exclusions')
-    exclusions = re.split(r'[,\s]+', exclusions) if exclusions else []
-    params = {
-        'src': _get_params('src', request.args),
-        'dst': _get_params('dst', request.args),
-        'exclusions': exclusions,
-        'delete': 'delete' in request.args,
-        'recurrence': int(request.args.get('recurrence')),
-        }
-    for hour in ('hour_begin', 'hour_end'):
-        val = int(request.args.get(hour))
-        params[hour] = val if val >= 0 else None
-
-    if _validate_params(params['src']) and _validate_params(params['dst']):
-        Sync.update({'_id': ObjectId(id)},
+    params = _get_sync_params(request.args)
+    if params:
+        Sync.update({'_id': ObjectId(request.args['id'])},
                 {'$set': params}, safe=True)
         result = True
 
@@ -187,23 +157,20 @@ def update_sync():
 
 @app.route('/syncs/reset')
 def reset_sync():
-    id = request.args.get('id')
-    Sync.update({'_id': ObjectId(id)},
+    Sync.update({'_id': ObjectId(request.args['id'])},
             {'$unset': {'reserved': True}}, safe=True)
     return jsonify(result=True)
 
 @app.route('/syncs/remove')
 def remove_sync():
-    id = request.args.get('id')
-    Sync.remove({'_id': ObjectId(id)})
+    Sync.remove({'_id': ObjectId(request.args['id'])})
     return jsonify(result=True)
 
 
 @app.route('/syncs/status')
 def get_sync_status():
     result = None
-    id = request.args.get('id')
-    res = Sync.find_one({'_id': ObjectId(id)})
+    res = Sync.find_one({'_id': ObjectId(request.args['id'])})
     if res:
         if res.get('processing') == True:
             result = 'processing'
@@ -221,15 +188,39 @@ def _get_params(prefix, data):
         if val:
             if attr == 'user':
                 val = ObjectId(val)
+            elif attr == 'path' and ',' in val:
+                val = [p for p in re.split(r'[,\s]+', val) if p]
             res[attr] = val
     return res
 
-def _validate_params(params):
-    if not params.get('path'):
+def _validate_params(params, multiple_paths=True):
+    path = params.get('path')
+    if not path:
+        return False
+    if not multiple_paths and isinstance(path, (list, tuple)) \
+            and len(path) > 1:
         return False
     if not (params.get('user') or params.get('hwaddr') or params.get('uuid')):
         return False
     return True
+
+def _get_sync_params(data):
+    exclusions = data.get('exclusions')
+    exclusions = re.split(r'[,\s]+', exclusions) if exclusions else []
+    params = {
+        'exclusions': [p for p in exclusions if p],
+        'delete': 'delete' in data,
+        'recurrence': int(data.get('recurrence')),
+        }
+    for key in ('src', 'dst'):
+        params[key] = _get_params(key, data)
+    for hour in ('hour_begin', 'hour_end'):
+        val = int(data.get(hour))
+        params[hour] = val if val >= 0 else None
+
+    if _validate_params(params['src']) and \
+            _validate_params(params['dst'], multiple_paths=False):
+        return params
 
 def _get_params_str(params):
     user_id = params.get('user')
