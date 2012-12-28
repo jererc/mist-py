@@ -3,7 +3,7 @@ import re
 
 from flask import session, request, url_for, render_template, redirect, jsonify
 
-from pymongo.objectid import ObjectId
+from bson.objectid import ObjectId
 from pymongo import ASCENDING
 
 from mist import get_users, get_user, User, Host, Sync

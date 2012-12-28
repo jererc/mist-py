@@ -1,12 +1,12 @@
+import socket
 import logging
 
-from pymongo.objectid import ObjectId
+from bson.objectid import ObjectId
 from pymongo import ASCENDING
 
 from factory import Factory
 
 from systools.network.ssh import Host as SshHost
-from systools.network import get_ip
 
 from mist import settings
 from mist.utils.db import connect, Model
@@ -47,12 +47,11 @@ def get_user(id=None, name=None, spec=None):
 def get_host(**kwargs):
     spec = {'alive': True}
     if kwargs.get('host'):
-        host = kwargs['host']
-        if host == 'localhost':
-            host = get_ip()
-        elif not isinstance(host, (list, tuple)):
-            host = [host]
-        spec['host'] = {'$in': get_ip()}
+        hosts = kwargs['host']
+        if not isinstance(hosts, (list, tuple)):
+            hosts = [hosts]
+        hosts = list(set(map(socket.gethostbyname, hosts)))
+        spec['host'] = {'$in': hosts}
     if kwargs.get('user'):
         spec['users'] = {'$elemMatch': {
             '_id': kwargs['user'],
