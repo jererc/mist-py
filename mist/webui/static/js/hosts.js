@@ -1,19 +1,25 @@
+var showDelay;
+
 function initActions() {
-    $('.content_element').mouseover(function() {
+    $('.content_element').mouseenter(function() {
         $(this).addClass('element_highlight');
-        $(this).find('.element_details').slideDown('fast');
-        });
+        var element = $(this).find('.element_details');
+        showDelay = setTimeout(function () {
+            element.slideDown('fast');
+        }, 600);
+    });
     $('.content_element').mouseleave(function() {
+        clearTimeout(showDelay);
         $(this).removeClass('element_highlight');
         $(this).find('.element_details').slideUp('slow');
-        });
+    });
 
     $('.img_button[alt="more"]').bind('click', function() {
         var div = $(this).parents('.content_element')[0];
         $(div).find('.element_info').slideToggle('fast');
         return false;
-        });
-    };
+    });
+};
 
 function updateStatus() {
     $('.content_element').each(function(result) {
@@ -27,18 +33,17 @@ function updateStatus() {
                     status.addClass('host_up');
                     status.removeClass('host_down');
                     status.html('up');
-                    }
-                else {
+                } else {
                     status.addClass('host_down');
                     status.removeClass('host_up');
                     status.html('down');
-                    }
-                });
-        });
-    };
+                }
+            });
+    });
+};
 
 $(function() {
     initActions();
     updateStatus();
-    var status_interval = window.setInterval(updateStatus, 5000);
-    });
+    var statusInterval = window.setInterval(updateStatus, 5000);
+});

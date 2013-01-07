@@ -4,7 +4,7 @@ function initActions() {
         $(div).find('.element_edit').slideToggle('fast');
         $(div).find('.save_action').fadeToggle('fast');
         return false;
-        });
+    });
 
     $('.img_button[alt="add"]').bind('click', function() {
         var div = $(this).parents('.content_new')[0];
@@ -13,10 +13,10 @@ function initActions() {
             function(data) {
                 if (data.result) {
                     location.reload();
-                    }
-                });
+                }
+            });
         return false;
-        });
+    });
 
     $('.img_button[alt="update"]').bind('click', function() {
         var div = $(this).parents('.content_element')[0];
@@ -25,10 +25,10 @@ function initActions() {
             function(data) {
                 if (data.result) {
                     location.reload();
-                    }
-                });
+                }
+            });
         return false;
-        });
+    });
 
     $('.img_button[alt="remove"]').bind('click', function() {
         var div = $(this).parents('.content_element')[0];
@@ -37,12 +37,12 @@ function initActions() {
             function(data) {
                 if (data.result) {
                     $(div).fadeOut('fast');
-                    }
-                });
+                }
+            });
         return false;
-        });
-    };
+    });
+};
 
 $(function() {
     initActions();
-    });
+});
