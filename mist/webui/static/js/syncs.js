@@ -11,7 +11,7 @@ function initActions() {
     $('.content_element').mouseleave(function() {
         clearTimeout(showDelay);
         $(this).removeClass('element_highlight');
-        $(this).find('.element_info').slideUp('slow');
+        $(this).find('.element_info').delay(2000).slideUp('slow');
     });
 
     $('.img_button[alt="edit"]').bind('click', function() {
