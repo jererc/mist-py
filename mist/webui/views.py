@@ -4,7 +4,7 @@ import re
 from flask import session, request, url_for, render_template, redirect, jsonify
 
 from bson.objectid import ObjectId
-from pymongo import ASCENDING
+from pymongo import ASCENDING, DESCENDING
 
 from mist import get_users, get_user, User, Host, Sync
 from mist.webui import app
@@ -20,7 +20,7 @@ def index():
 @app.route('/hosts')
 def hosts():
     items = []
-    for res in Host.find():
+    for res in Host.find(sort=[('seen', DESCENDING)]):
         res['logged_users'] = []
         for user in res.get('users', []):
             if user.get('logged'):
@@ -63,12 +63,13 @@ def users():
 
 @app.route('/users/add')
 def add_user():
-    result = None
+    result = False
 
     doc = {
         'username': request.args.get('username'),
         'password': request.args.get('password'),
         'port': int(request.args.get('port')),
+        'paths': {},
         }
     if doc['username'] and doc['password']:
         name = request.args.get('name') or '%s %s' % (doc['username'], doc['password'])
@@ -77,6 +78,8 @@ def add_user():
             }
         if not User.find_one(spec):
             doc['name'] = name
+            for category in ('movies', 'tv', 'music'):
+                doc['paths'][category] = request.args.get('path_%s' % category, '')
             User.insert(doc, safe=True)
             result = True
 
@@ -118,7 +121,7 @@ def syncs():
 
     now = datetime.utcnow()
     items = []
-    for res in Sync.find():
+    for res in Sync.find(sort=[('processed', DESCENDING)]):
         date_ = res.get('processed')
         if  date_ and date_ + timedelta(hours=res['recurrence']) > now:
             res['status'] = 'ok'
@@ -135,24 +138,20 @@ def syncs():
 @app.route('/syncs/add')
 def add_sync():
     result = None
-
     params = _get_sync_params(request.args)
     if params and not Sync.find_one(params):
         Sync.insert(params, safe=True)
         result = True
-
     return jsonify(result=result)
 
 @app.route('/syncs/update')
 def update_sync():
     result = None
-
     params = _get_sync_params(request.args)
     if params:
         Sync.update({'_id': ObjectId(request.args['id'])},
                 {'$set': params}, safe=True)
         result = True
-
     return jsonify(result=result)
 
 @app.route('/syncs/reset')

@@ -5,74 +5,100 @@
 {% endblock %}
 
 {% block content %}
-<div class="content_div content_new">
-    <div class="element_new">
+<div class="content-div content-new">
+    <div class="element-new">
         <form>
             <table>
                 <tr>
-                    <td class="details_title">Name:</td>
-                    <td><input type="text" name="name" size="30" value="" /></td>
+                    <td class="title-td">
+                        <span class="text-normal">Name</span>
+                    </td>
+                    <td><input class="default-text" type="text" name="name" title="name" /></td>
                 </tr>
                 <tr>
-                    <td class="details_title">Username:</td>
-                    <td><input type="text" name="username" size="30" value="" /></td>
+                    <td class="title-td">
+                        <span class="text-normal">Username</span>
+                    </td>
+                    <td><input class="default-text" type="text" name="username" title="ssh username" /></td>
                 </tr>
                 <tr>
-                    <td class="details_title">Password:</td>
-                    <td><input type="text" name="password" size="30" value="" /></td>
+                    <td class="title-td">
+                        <span class="text-normal">Password</span>
+                    </td>
+                    <td><input class="default-text" type="text" name="password" title="ssh password" /></td>
                 </tr>
                 <tr>
-                    <td class="details_title">Port:</td>
-                    <td><input type="number" name="port" title="ssh port" size="2" min="1" max="65536" value="22" /></td>
+                    <td class="title-td">
+                        <span class="text-normal">Port</span>
+                    </td>
+                    <td><input type="number" name="port" size="2" min="1" max="65536" value="22" /></td>
                 </tr>
+                {% for category in ('movies', 'tv', 'music') %}
+                    <tr>
+                        <td class="title-td">
+                            <span class="text-normal">Path to {{ category }}</span>
+                        </td>
+                        <td><input class="default-text" type="text" name="path_{{ category }}" title="{{ category }} path" /></td>
+                    </tr>
+                {% endfor %}
             </table>
         </form>
     </div>
 
-    <div class="element_new_actions">
-        <a href=""><img class="img_button" src="{{ url_for('static', filename='img/add.png') }}" alt="add"></img></a>
+    <div class="element-new-actions">
+        <a href=""><img class="img-button" src="{{ url_for('static', filename='img/add.png') }}" alt="add"></img></a>
     </div>
 </div>
 
 {% for item in items %}
-    <div class="content_div content_element">
+    <div class="content-div content-element">
         <form>
             <input type="hidden" name="id" value="{{ item._id }}" />
 
-            <div class="element_name">
-                <span class="user_status user_{{ item.status }}">{{ item.status }}</span>
-                <span class="title">{{ item.name }}</span>
+            <div>
+                <span class="user-status user-{{ item.status }}">{{ item.status }}</span>
+                <span class="text-title">{{ item.name }}</span>
             </div>
 
-            <div class="element_actions">
-                <a href=""><img class="img_button save_action" src="{{ url_for('static', filename='img/save.png') }}" alt="update"></img></a>
-                <a href=""><img class="img_button" src="{{ url_for('static', filename='img/edit.png') }}" alt="edit"></img></a>
-                <a href=""><img class="img_button" src="{{ url_for('static', filename='img/remove.png') }}" alt="remove"></img></a>
+            <div class="element-actions">
+                <a href=""><img class="img-button save-action" src="{{ url_for('static', filename='img/save.png') }}" alt="update"></img></a>
+                <a href=""><img class="img-button" src="{{ url_for('static', filename='img/edit.png') }}" alt="edit"></img></a>
+                <a href=""><img class="img-button" src="{{ url_for('static', filename='img/remove.png') }}" alt="remove"></img></a>
             </div>
 
-            <div class="element_edit">
+            <div class="element-edit">
                 <table>
                     <tr>
-                        <td class="details_title">Name:</td>
-                        <td><input type="text" name="name" size="30" value="{{ item.name }}" /></td>
+                        <td class="title-td">
+                            <span class="text-normal">Name</span>
+                        </td>
+                        <td><input class="default-text" type="text" name="name" value="{{ item.name }}" /></td>
                     </tr>
                     <tr>
-                        <td class="details_title">Username:</td>
-                        <td><input type="text" name="username" size="30" value="{{ item.username }}" /></td>
+                        <td class="title-td">
+                            <span class="text-normal">Username</span>
+                        </td>
+                        <td><input class="default-text" type="text" name="username" value="{{ item.username }}" /></td>
                     </tr>
                     <tr>
-                        <td class="details_title">Password:</td>
-                        <td><input type="text" name="password" size="30" value="{{ item.password }}" /></td>
+                        <td class="title-td">
+                            <span class="text-normal">Password</span>
+                        </td>
+                        <td><input class="default-text" type="text" name="password" value="{{ item.password }}" /></td>
                     </tr>
                     <tr>
-                        <td class="details_title">Port:</td>
+                        <td class="title-td">
+                            <span class="text-normal">Port</span>
+                        </td>
                         <td><input type="number" name="port" size="2" min="1" max="65536" value="{% if item.port %}{{ item.port }}{% else %}22{% endif %}" /></td>
                     </tr>
 
                     {% for category in ('movies', 'tv', 'music') %}
                         <tr>
-                            <td class="details_title">Path {{ category }}:</td>
-                            <td><input type="text" name="path_{{ category }}" size="30" value="{{ item.paths[category] }}" /></td>
+                            <td class="title-td">
+                                <span class="text-normal">Path to {{ category }}</span>
+                            </td>
+                            <td><input class="default-text" type="text" name="path_{{ category }}" value="{{ item.paths[category] }}" /></td>
                         </tr>
                     {% endfor %}
                 </table>

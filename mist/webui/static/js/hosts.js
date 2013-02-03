@@ -1,41 +1,48 @@
-var showDelay;
+var showDelays = {};
+
+
+function toggleElement(element, direction, delay) {
+    var id = $(element).attr('data-id');
+    clearTimeout(showDelays[id]);
+    var info = $(element).find('.element-details');
+    showDelays[id] = setTimeout(function () {
+        if (direction == 'up') {
+            info.slideUp('slow');
+        } else {
+            info.slideDown('fast');
+        }
+    }, delay);
+};
 
 function initActions() {
-    $('.content_element').mouseenter(function() {
-        $(this).addClass('element_highlight');
-        var element = $(this).find('.element_details');
-        showDelay = setTimeout(function () {
-            element.slideDown('fast');
-        }, 600);
+    $('.content-element').mouseenter(function() {
+        $(this).addClass('element-highlight');
+        toggleElement(this, 'down', 600);
     });
-    $('.content_element').mouseleave(function() {
-        clearTimeout(showDelay);
-        $(this).removeClass('element_highlight');
-        $(this).find('.element_details').delay(2000).slideUp('slow');
+    $('.content-element').mouseleave(function() {
+        $(this).removeClass('element-highlight');
+        toggleElement(this, 'up', 2000);
     });
 
-    $('.img_button[alt="more"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
-        $(div).find('.element_info').slideToggle('fast');
+    $('.img-button[alt="more"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
+        $(div).find('.element-info').slideToggle('fast');
         return false;
     });
 };
 
 function updateStatus() {
-    $('.content_element').each(function(result) {
-        var status = $(this).find('.host_status');
-        var title = $(this).find('.title');
+    $('.content-element').each(function(result) {
+        var status = $(this).find('.host-status');
 
         $.getJSON($SCRIPT_ROOT + '/hosts/status',
             {id: $(this).find('input[name="id"]').val()},
             function(data) {
                 if (data.result) {
-                    status.addClass('host_up');
-                    status.removeClass('host_down');
+                    status.removeClass('host-down').addClass('host-up');
                     status.html('up');
                 } else {
-                    status.addClass('host_down');
-                    status.removeClass('host_up');
+                    status.removeClass('host-up').addClass('host-down');
                     status.html('down');
                 }
             });

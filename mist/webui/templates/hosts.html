@@ -6,46 +6,52 @@
 
 {% block content %}
 {% for item in items %}
-    <div class="content_div content_element">
+    <div class="content-div content-element" data-id="{{ item._id }}">
         <input type="hidden" name="id" value="{{ item._id }}" />
 
-        <span class="host_status"></span>
-        <span class="title">{{ item.host }}{% if item.logged_users %} ({{ item.logged_users|join(', ') }}){% endif %}</span>
+        <span class="host-status"></span>
+        <span class="text-title">{{ item.host }}{% if item.logged_users %} ({{ item.logged_users|join(', ') }}){% endif %}</span>
         </td>
 
-        <div class="element_details">
+        <div class="element-details text-normal">
             <table>
                 <tr>
-                    <td class="details_title">Seen:</td>
+                    <td class="title-td">Seen:</td>
                     <td>{{ item.seen }}</td>
                 </tr>
             </table>
         </div>
 
         {% if item.logged_users %}
-            <div class="element_actions">
-                <a href=""><img class="img_button" src="{{ url_for('static', filename='img/more.png') }}" alt="more"></img></a>
+            <div class="element-actions">
+                <a href=""><img class="img-button" src="{{ url_for('static', filename='img/more.png') }}" alt="more"></img></a>
             </div>
 
-            <div class="element_info">
+            <div class="element-info">
                 <table>
                     <tr>
-                        <td class="details_title">Hostname:</td>
-                        <td>{% if item.hostname %}{{ item.hostname }}{% endif %}</td>
+                        <td class="title-td">
+                            <span class="text-normal">Hostname:</span>
+                        </td>
+                        <td>
+                            <span class="text-normal">{% if item.hostname %}{{ item.hostname }}{% endif %}</span>
+                        </td>
                     </tr>
                     {% for title, data in [('Interfaces', item.ifconfig), ('Disks', item.disks)] %}
                         <tr>
-                            <td class="details_title">{{ title }}:</td>
+                            <td class="title-td">
+                                <span class="text-normal">{{ title }}:</span>
+                            </td>
                             <td>
                             {% if data %}
                                 {% for info in data %}
-                                    <table class="details_table">
-                                    {% for key, val in info|dictsort %}
-                                        <tr>
-                                            <td class="details_title">{{ key }}:</td>
-                                            <td>{% if val %}{{ val }}{% endif %}</td>
-                                        </tr>
-                                    {% endfor %}
+                                    <table class="table-details text-normal">
+                                        {% for key, val in info|dictsort %}
+                                            <tr>
+                                                <td class="title-td">{{ key }}:</td>
+                                                <td>{% if val %}{{ val }}{% endif %}</td>
+                                            </tr>
+                                        {% endfor %}
                                     </table>
                                 {% endfor %}
                             {% endif %}

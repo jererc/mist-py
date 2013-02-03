@@ -5,16 +5,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="content_div content_new">
-    <div class="element_new">
+<div class="content-div content-new">
+    <div class="element-new">
         <form>
             {% for title, type in [('Source', 'src'), ('Destination', 'dst')] %}
                 <table>
                     <tr>
-                        <td><p class="title">{{ title }}</p></td>
+                        <td><p class="text-title">{{ title }}</p></td>
                     </tr>
                     <tr>
-                        <td class="details_title details_title_sub">user:</td>
+                        <td class="title-td title-td-2">
+                            <span class="text-normal">user</span>
+                        </td>
                         <td>
                             <select title="user" name="{{ type }}_user">
                                 <option value="">any</option>
@@ -27,8 +29,10 @@
 
                     {% for val in ['hwaddr', 'uuid', 'path'] %}
                         <tr>
-                            <td class="details_title details_title_sub">{{ val }}:</td>
-                            <td><input type="text" name="{{ type }}_{{ val }}" size="30" value="" /></td>
+                            <td class="title-td title-td-2">
+                                <span class="text-normal">{{ val }}</span>
+                            </td>
+                            <td><input class="default-text" type="text" name="{{ type }}_{{ val }}" title="{% if type == 'src' %}source{% else %}destination{% endif %} {{ val }}" /></td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -36,24 +40,32 @@
 
             <table>
                 <tr>
-                    <td><p class="title">Options:</p></td>
+                    <td><p class="text-title">Options</p></td>
                 </tr>
                 <tr>
-                    <td class="details_title details_title_sub">exclusions:</td>
-                    <td><input type="text" name="exclusions" size="30" value="" /></td>
+                    <td class="title-td title-td-2">
+                        <span class="text-normal">exclusions</span>
+                    </td>
+                    <td><input class="default-text" type="text" name="exclusions" title="list of exclusions separated by commas" /></td>
                 </tr>
                 <tr>
-                    <td class="details_title details_title_sub">delete:</td>
-                    <td><input type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
+                    <td class="title-td title-td-2">
+                        <span class="text-normal">delete</span>
+                    </td>
+                    <td><input class="default-text" type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
                 </tr>
                 <tr>
-                    <td class="details_title details_title_sub">recurrence:</td>
+                    <td class="title-td title-td-2">
+                        <span class="text-normal">recurrence</span>
+                    </td>
                     <td>
                         <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="12" />
                     </td>
                 </tr>
                 <tr>
-                    <td class="details_title details_title_sub">time range:</td>
+                    <td class="title-td title-td-2">
+                        <span class="text-normal">time range</span>
+                    </td>
                     <td>
                         <input type="number" name="hour_begin" title="hour before which the sync cant start" size="2" min="-1" max="23" value="-1" /> to
                         <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="-1" />
@@ -63,44 +75,47 @@
         </form>
     </div>
 
-    <div class="element_new_actions">
-        <a href=""><img class="img_button" src="{{ url_for('static', filename='img/add.png') }}" alt="add"></img></a>
+    <div class="element-new-actions">
+        <a href=""><img class="img-button" src="{{ url_for('static', filename='img/add.png') }}" alt="add"></img></a>
     </div>
 </div>
 
 {% for item in items %}
-    <div class="content_div content_element">
+    <div class="content-div content-element" data-id="{{ item._id }}">
         <form>
             <input type="hidden" name="id" value="{{ item._id }}" />
 
-            <span class="sync_status sync_{{ item.status }}">{{ item.status }}</span>
-            <span class="title">{{ item.src_str }} to {{ item.dst_str }}</span>
+            <span class="sync-status sync-{{ item.status }}">{{ item.status }}</span>
+            <span class="text-title">{{ item.src_str }} to {{ item.dst_str }}</span>
 
-            <div class="element_actions">
-                <a href=""><img class="img_button save_action" src="{{ url_for('static', filename='img/save.png') }}" alt="update"></img></a>
-                <a href=""><img class="img_button" src="{{ url_for('static', filename='img/edit.png') }}" alt="edit"></img></a>
-                <a href=""><img class="img_button" src="{{ url_for('static', filename='img/reset.png') }}" alt="reset"></img></a>
-                <a href=""><img class="img_button" src="{{ url_for('static', filename='img/remove.png') }}" alt="remove"></img></a>
+            <div class="element-actions">
+                <a href=""><img class="img-button save-action" src="{{ url_for('static', filename='img/save.png') }}" alt="update"></img></a>
+                <a href=""><img class="img-button" src="{{ url_for('static', filename='img/edit.png') }}" alt="edit"></img></a>
+                <a href=""><img class="img-button" src="{{ url_for('static', filename='img/reset.png') }}" alt="reset"></img></a>
+                <a href=""><img class="img-button" src="{{ url_for('static', filename='img/remove.png') }}" alt="remove"></img></a>
             </div>
 
-            <div class="element_info">
+            <div class="element-info text-normal">
                 <table>
                     {% for key, val in [('Processed', item.processed), ('Reserved', item.reserved)] %}
                         <tr>
-                            <td class="details_title">{{ key }}:</td><td>{% if val %}{{ val }}{% else %}-{% endif %}</td>
+                            <td class="title-td">{{ key }}:</td>
+                            <td>{% if val %}{{ val }}{% else %}-{% endif %}</td>
                         </tr>
                     {% endfor %}
                 </table>
             </div>
 
-            <div class="element_edit">
+            <div class="element-edit">
                 {% for title, type in [('Source', 'src'), ('Destination', 'dst')] %}
                     <table>
                         <tr>
-                            <td><p class="title">{{ title }}</p></td>
+                            <td colspan="2"><p class="text-title">{{ title }}</p></td>
                         </tr>
                         <tr>
-                            <td class="details_title details_title_sub">user:</td>
+                            <td class="title-td title-td-2">
+                                <span class="text-normal">user</span>
+                            </td>
                             <td>
                                 <select title="user" name="{{ type }}_user">
                                     <option value="">any</option>
@@ -113,8 +128,10 @@
 
                         {% for val in ['hwaddr', 'uuid', 'path'] %}
                             <tr>
-                                <td class="details_title details_title_sub">{{ val }}:</td>
-                                <td><input type="text" name="{{ type }}_{{ val }}" size="30" value="{{ item[type][val] }}" /><br></td>
+                                <td class="title-td title-td-2">
+                                    <span class="text-normal">{{ val }}</span>
+                                </td>
+                                <td><input class="default-text" type="text" name="{{ type }}_{{ val }}" value="{{ item[type][val] }}" /><br></td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -122,24 +139,32 @@
 
                 <table>
                     <tr>
-                        <td><p class="title">Options</p></td>
+                        <td colspan="2"><p class="text-title">Options</p></td>
                     </tr>
                     <tr>
-                        <td class="details_title details_title_sub">exclusions:</td>
-                        <td><input type="text" name="exclusions" size="30" value="{{ item.exclusions|join(', ') }}" /></td>
+                        <td class="title-td title-td-2">
+                            <span class="text-normal">exclusions</span>
+                        </td>
+                        <td><input class="default-text" type="text" name="exclusions" value="{{ item.exclusions|join(', ') }}" /></td>
                     </tr>
                     <tr>
-                        <td class="details_title details_title_sub">delete:</td>
-                        <td><input type="checkbox" name="delete"{% if item.delete %} checked="checked"{% endif %} title="delete removed files at destination" /></td>
+                        <td class="title-td title-td-2">
+                            <span class="text-normal">delete</span>
+                        </td>
+                        <td><input class="default-text" type="checkbox" name="delete"{% if item.delete %} checked="checked"{% endif %} title="delete removed files at destination" /></td>
                     </tr>
                     <tr>
-                        <td class="details_title details_title_sub">recurrence:</td>
+                        <td class="title-td title-td-2">
+                            <span class="text-normal">recurrence</span>
+                        </td>
                         <td>
                             <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="{{ item.recurrence }}" />
                         </td>
                     </tr>
                     <tr>
-                        <td class="details_title details_title_sub">time range:</td>
+                        <td class="title-td title-td-2">
+                            <span class="text-normal">time range</span>
+                        </td>
                         <td>
                             <input type="number" name="hour_begin" title="hour before which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_begin %}{{ item.hour_begin }}{% else %}-1{% endif %}" /> to
                             <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="{% if item.hour_end %}{{ item.hour_end }}{% else %}-1{% endif %}" />

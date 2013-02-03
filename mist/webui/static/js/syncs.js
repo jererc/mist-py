@@ -1,30 +1,46 @@
-var showDelay;
+var showDelays = {};
+
+
+function toggleElement(element, direction, delay) {
+    var id = $(element).attr('data-id');
+    clearTimeout(showDelays[id]);
+    var info = $(element).find('.element-info');
+    showDelays[id] = setTimeout(function () {
+        if (direction == 'up') {
+            info.slideUp('slow');
+        } else {
+            info.slideDown('fast');
+        }
+    }, delay);
+};
 
 function initActions() {
-    $('.content_element').mouseenter(function() {
-        $(this).addClass('element_highlight');
-        var element = $(this).find('.element_info');
-        showDelay = setTimeout(function () {
-            element.slideDown('fast');
-        }, 600);
+    $('.content-element').mouseenter(function() {
+        $(this).addClass('element-highlight');
+        toggleElement(this, 'down', 600);
     });
-    $('.content_element').mouseleave(function() {
-        clearTimeout(showDelay);
-        $(this).removeClass('element_highlight');
-        $(this).find('.element_info').delay(2000).slideUp('slow');
+    $('.content-element').mouseleave(function() {
+        $(this).removeClass('element-highlight');
+        toggleElement(this, 'up', 2000);
     });
 
-    $('.img_button[alt="edit"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
-        $(div).find('.element_edit').slideToggle('fast');
-        $(div).find('.save_action').fadeToggle('fast');
+    $('.img-button[alt="edit"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
+        $(div).find('.element-edit').slideToggle('fast');
+        $(div).find('.save-action').fadeToggle('fast');
         return false;
     });
 
-    $('.img_button[alt="add"]').bind('click', function() {
-        var div = $(this).parents('.content_new')[0];
+    $('.img-button[alt="add"]').click(function() {
+        var div = $(this).parents('.content-new')[0];
+        var form = $(div).find('form');
+        form.find('.default-text').each(function() {
+            if ($(this).val() == this.title) {
+                $(this).val("");
+            }
+        });
         $.getJSON($SCRIPT_ROOT + '/syncs/add',
-            $(div).find('form').serializeArray(),
+            form.serializeArray(),
             function(data) {
                 if (data.result) {
                     location.reload();
@@ -33,8 +49,8 @@ function initActions() {
         return false;
     });
 
-    $('.img_button[alt="update"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
+    $('.img-button[alt="update"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
         $.getJSON($SCRIPT_ROOT + '/syncs/update',
             $(this).parents('form').serializeArray(),
             function(data) {
@@ -45,8 +61,8 @@ function initActions() {
         return false;
     });
 
-    $('.img_button[alt="reset"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
+    $('.img-button[alt="reset"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
         $.getJSON($SCRIPT_ROOT + '/syncs/reset',
             $(this).parents('form').serializeArray(),
             function(data) {
@@ -57,8 +73,8 @@ function initActions() {
         return false;
     });
 
-    $('.img_button[alt="remove"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
+    $('.img-button[alt="remove"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
         $.getJSON($SCRIPT_ROOT + '/syncs/remove',
             $(this).parents('form').serializeArray(),
             function(data) {

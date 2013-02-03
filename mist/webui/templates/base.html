@@ -4,6 +4,7 @@
     <title>{{ config.PACKAGE_NAME }}{% if request.endpoint %} - {{ request.endpoint }}{% endif %}</title>
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.png') }}">
+    <link href="{{ url_for('static', filename='css/reset.css') }}" media="screen" rel="stylesheet" type="text/css">
     <link href="{{ url_for('static', filename='css/style.css') }}" media="screen" rel="stylesheet" type="text/css">
 
     {% block extra_css %}{% endblock %}
@@ -22,12 +23,11 @@
     {{ extra_header|safe }}
 </head>
 <body>
-    <div class="main_menu">
+    <div class="main-menu">
         {% for menu in ['hosts', 'users', 'syncs'] %}
             <a href="{{ url_for(menu) }}"{% if menu == request.endpoint %} class="highlight"{% endif %}>{{ menu }}</a>
         {% endfor %}
     </div>
-
     <div class="content">
         {% block content %}{% endblock %}
     </div>

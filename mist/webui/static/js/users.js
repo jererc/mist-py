@@ -1,15 +1,22 @@
 function initActions() {
-    $('.img_button[alt="edit"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
-        $(div).find('.element_edit').slideToggle('fast');
-        $(div).find('.save_action').fadeToggle('fast');
+    $('.img-button[alt="edit"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
+        $(div).find('.element-edit').slideToggle('fast');
+        $(div).find('.save-action').fadeToggle('fast');
         return false;
     });
 
-    $('.img_button[alt="add"]').bind('click', function() {
-        var div = $(this).parents('.content_new')[0];
+    $('.img-button[alt="add"]').click(function() {
+        var div = $(this).parents('.content-new')[0];
+        var form = $(div).find('form');
+        form.find('.default-text').each(function() {
+            if ($(this).val() == this.title) {
+                $(this).val("");
+            }
+        });
+
         $.getJSON($SCRIPT_ROOT + '/users/add',
-            $(div).find('form').serializeArray(),
+            form.serializeArray(),
             function(data) {
                 if (data.result) {
                     location.reload();
@@ -18,8 +25,8 @@ function initActions() {
         return false;
     });
 
-    $('.img_button[alt="update"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
+    $('.img-button[alt="update"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
         $.getJSON($SCRIPT_ROOT + '/users/update',
             $(this).parents('form').serializeArray(),
             function(data) {
@@ -30,8 +37,8 @@ function initActions() {
         return false;
     });
 
-    $('.img_button[alt="remove"]').bind('click', function() {
-        var div = $(this).parents('.content_element')[0];
+    $('.img-button[alt="remove"]').click(function() {
+        var div = $(this).parents('.content-element')[0];
         $.getJSON($SCRIPT_ROOT + '/users/remove',
             $(this).parents('form').serializeArray(),
             function(data) {
