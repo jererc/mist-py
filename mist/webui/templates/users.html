@@ -13,19 +13,19 @@
                     <td class="title-td">
                         <span class="text-normal">Name</span>
                     </td>
-                    <td><input class="default-text" type="text" name="name" title="name" /></td>
+                    <td><input class="input-text" type="text" name="name" placeholder="name" /></td>
                 </tr>
                 <tr>
                     <td class="title-td">
                         <span class="text-normal">Username</span>
                     </td>
-                    <td><input class="default-text" type="text" name="username" title="ssh username" /></td>
+                    <td><input class="input-text" type="text" name="username" placeholder="ssh username" /></td>
                 </tr>
                 <tr>
                     <td class="title-td">
                         <span class="text-normal">Password</span>
                     </td>
-                    <td><input class="default-text" type="text" name="password" title="ssh password" /></td>
+                    <td><input class="input-text" type="text" name="password" placeholder="ssh password" /></td>
                 </tr>
                 <tr>
                     <td class="title-td">
@@ -38,7 +38,7 @@
                         <td class="title-td">
                             <span class="text-normal">Path to {{ category }}</span>
                         </td>
-                        <td><input class="default-text" type="text" name="path_{{ category }}" title="{{ category }} path" /></td>
+                        <td><input class="input-text" type="text" name="path_{{ category }}" placeholder="{{ category }} path" /></td>
                     </tr>
                 {% endfor %}
             </table>
@@ -72,19 +72,19 @@
                         <td class="title-td">
                             <span class="text-normal">Name</span>
                         </td>
-                        <td><input class="default-text" type="text" name="name" value="{{ item.name }}" /></td>
+                        <td><input class="input-text" type="text" name="name" value="{{ item.name }}" /></td>
                     </tr>
                     <tr>
                         <td class="title-td">
                             <span class="text-normal">Username</span>
                         </td>
-                        <td><input class="default-text" type="text" name="username" value="{{ item.username }}" /></td>
+                        <td><input class="input-text" type="text" name="username" value="{{ item.username }}" /></td>
                     </tr>
                     <tr>
                         <td class="title-td">
                             <span class="text-normal">Password</span>
                         </td>
-                        <td><input class="default-text" type="text" name="password" value="{{ item.password }}" /></td>
+                        <td><input class="input-text" type="text" name="password" value="{{ item.password }}" /></td>
                     </tr>
                     <tr>
                         <td class="title-td">
@@ -98,7 +98,7 @@
                             <td class="title-td">
                                 <span class="text-normal">Path to {{ category }}</span>
                             </td>
-                            <td><input class="default-text" type="text" name="path_{{ category }}" value="{{ item.paths[category] }}" /></td>
+                            <td><input class="input-text" type="text" name="path_{{ category }}" value="{{ item.paths[category] }}" /></td>
                         </tr>
                     {% endfor %}
                 </table>

@@ -32,7 +32,7 @@
                             <td class="title-td title-td-2">
                                 <span class="text-normal">{{ val }}</span>
                             </td>
-                            <td><input class="default-text" type="text" name="{{ type }}_{{ val }}" title="{% if type == 'src' %}source{% else %}destination{% endif %} {{ val }}" /></td>
+                            <td><input class="input-text" type="text" name="{{ type }}_{{ val }}" placeholder="{% if type == 'src' %}source{% else %}destination{% endif %} {{ val }}" /></td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -46,13 +46,13 @@
                     <td class="title-td title-td-2">
                         <span class="text-normal">exclusions</span>
                     </td>
-                    <td><input class="default-text" type="text" name="exclusions" title="list of exclusions separated by commas" /></td>
+                    <td><input class="input-text" type="text" name="exclusions" placeholder="list of exclusions separated by commas" /></td>
                 </tr>
                 <tr>
                     <td class="title-td title-td-2">
                         <span class="text-normal">delete</span>
                     </td>
-                    <td><input class="default-text" type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
+                    <td><input type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
                 </tr>
                 <tr>
                     <td class="title-td title-td-2">
@@ -131,7 +131,7 @@
                                 <td class="title-td title-td-2">
                                     <span class="text-normal">{{ val }}</span>
                                 </td>
-                                <td><input class="default-text" type="text" name="{{ type }}_{{ val }}" value="{{ item[type][val] }}" /><br></td>
+                                <td><input class="input-text" type="text" name="{{ type }}_{{ val }}" value="{{ item[type][val] }}" /><br></td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -145,13 +145,13 @@
                         <td class="title-td title-td-2">
                             <span class="text-normal">exclusions</span>
                         </td>
-                        <td><input class="default-text" type="text" name="exclusions" value="{{ item.exclusions|join(', ') }}" /></td>
+                        <td><input class="input-text" type="text" name="exclusions" value="{{ item.exclusions|join(', ') }}" /></td>
                     </tr>
                     <tr>
                         <td class="title-td title-td-2">
                             <span class="text-normal">delete</span>
                         </td>
-                        <td><input class="default-text" type="checkbox" name="delete"{% if item.delete %} checked="checked"{% endif %} title="delete removed files at destination" /></td>
+                        <td><input type="checkbox" name="delete"{% if item.delete %} checked="checked"{% endif %} title="delete removed files at destination" /></td>
                     </tr>
                     <tr>
                         <td class="title-td title-td-2">

@@ -1,24 +1,5 @@
-var isMobile = isMobile();
-var hasFocus = true;
 var showDelays = {};
 
-
-function isMobile() {
-    if (navigator.userAgent.match(/iPhone|iPod|iPad|Android|WebOS|Blackberry|Symbian|Bada/i)) {
-        return true;
-    } else {
-        return false;
-    }
-};
-
-function handleFocus() {
-    $(window).blur(function() {
-        hasFocus = false;
-    });
-    $(window).focus(function() {
-        hasFocus = true;
-    });
-};
 
 function toggleElementNew(element, direction, delay) {
     var id = 'new';
@@ -48,22 +29,6 @@ function toggleElement(element, direction, delay) {
             info.slideDown('fast');
         }
     }, delay);
-};
-
-function initInputFields() {
-    $('.default-text').focus(function() {
-        if ($(this).val() == $(this)[0].title) {
-            $(this).removeClass('default-text-active');
-            $(this).val("");
-        }
-    });
-    $('.default-text').blur(function() {
-        if ($(this).val() == "") {
-            $(this).addClass('default-text-active');
-            $(this).val($(this)[0].title);
-        }
-    });
-    $('.default-text').blur();
 };
 
 function initBaseActions() {
@@ -99,10 +64,5 @@ function initBaseActions() {
 };
 
 $(function() {
-    if (isMobile) {
-        $('body').addClass('wide');
-    }
-    handleFocus();
-    initInputFields();
     initBaseActions();
 });
