@@ -5,47 +5,47 @@
 {% endblock %}
 
 {% block content %}
-<div class="content-div content-new">
-    <div class="element-new">
-        <form>
-            <table>
-                <tr>
-                    <td class="title-td">
-                        <span class="text-normal">Name</span>
-                    </td>
-                    <td><input class="input-text" type="text" name="name" placeholder="name" /></td>
-                </tr>
-                <tr>
-                    <td class="title-td">
-                        <span class="text-normal">Username</span>
-                    </td>
-                    <td><input class="input-text" type="text" name="username" placeholder="ssh username" /></td>
-                </tr>
-                <tr>
-                    <td class="title-td">
-                        <span class="text-normal">Password</span>
-                    </td>
-                    <td><input class="input-text" type="text" name="password" placeholder="ssh password" /></td>
-                </tr>
-                <tr>
-                    <td class="title-td">
-                        <span class="text-normal">Port</span>
-                    </td>
-                    <td><input type="number" name="port" size="2" min="1" max="65536" value="22" /></td>
-                </tr>
-                {% for category in ('movies', 'tv', 'music') %}
-                    <tr>
-                        <td class="title-td">
-                            <span class="text-normal">Path to {{ category }}</span>
-                        </td>
-                        <td><input class="input-text" type="text" name="path_{{ category }}" placeholder="{{ category }} path" /></td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </form>
-    </div>
+<div class="content-new-trigger"></div>
 
-    <div class="element-new-actions">
+<div class="content-div content-new element-highlight">
+    <form>
+        <table>
+            <tr>
+                <td class="title-td">
+                    <span class="text-normal">Name</span>
+                </td>
+                <td><input class="input-text" type="text" name="name" placeholder="name" /></td>
+            </tr>
+            <tr>
+                <td class="title-td">
+                    <span class="text-normal">Username</span>
+                </td>
+                <td><input class="input-text" type="text" name="username" placeholder="ssh username" /></td>
+            </tr>
+            <tr>
+                <td class="title-td">
+                    <span class="text-normal">Password</span>
+                </td>
+                <td><input class="input-text" type="text" name="password" placeholder="ssh password" /></td>
+            </tr>
+            <tr>
+                <td class="title-td">
+                    <span class="text-normal">Port</span>
+                </td>
+                <td><input type="number" name="port" size="2" min="1" max="65536" value="22" /></td>
+            </tr>
+            {% for category in ('movies', 'tv', 'music') %}
+                <tr>
+                    <td class="title-td">
+                        <span class="text-normal">Path to {{ category }}</span>
+                    </td>
+                    <td><input class="input-text" type="text" name="path_{{ category }}" placeholder="{{ category }} path" /></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </form>
+
+    <div class="element-actions-new">
         <a href=""><img class="img-button" src="{{ url_for('static', filename='img/add.png') }}" alt="add"></img></a>
     </div>
 </div>

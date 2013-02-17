@@ -1,29 +1,4 @@
-var showDelays = {};
-
-
-function toggleElement(element, direction, delay) {
-    var id = $(element).attr('data-id');
-    clearTimeout(showDelays[id]);
-    var info = $(element).find('.element-info');
-    showDelays[id] = setTimeout(function () {
-        if (direction == 'up') {
-            info.slideUp('slow');
-        } else {
-            info.slideDown('fast');
-        }
-    }, delay);
-};
-
 function initActions() {
-    $('.content-element').mouseenter(function() {
-        $(this).addClass('element-highlight');
-        toggleElement(this, 'down', 600);
-    });
-    $('.content-element').mouseleave(function() {
-        $(this).removeClass('element-highlight');
-        toggleElement(this, 'up', 2000);
-    });
-
     $('.img-button[alt="edit"]').click(function() {
         var div = $(this).parents('.content-element')[0];
         $(div).find('.element-edit').slideToggle('fast');

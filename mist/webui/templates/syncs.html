@@ -5,77 +5,77 @@
 {% endblock %}
 
 {% block content %}
-<div class="content-div content-new">
-    <div class="element-new">
-        <form>
-            {% for title, type in [('Source', 'src'), ('Destination', 'dst')] %}
-                <table>
-                    <tr>
-                        <td><p class="text-title">{{ title }}</p></td>
-                    </tr>
-                    <tr>
-                        <td class="title-td title-td-2">
-                            <span class="text-normal">user</span>
-                        </td>
-                        <td>
-                            <select title="user" name="{{ type }}_user">
-                                <option value="">any</option>
-                                {% for user in session.users %}
-                                    <option value="{{ user._id }}">{{ user.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                    </tr>
+<div class="content-new-trigger"></div>
 
-                    {% for val in ['hwaddr', 'uuid', 'path'] %}
-                        <tr>
-                            <td class="title-td title-td-2">
-                                <span class="text-normal">{{ val }}</span>
-                            </td>
-                            <td><input class="input-text" type="text" name="{{ type }}_{{ val }}" placeholder="{% if type == 'src' %}source{% else %}destination{% endif %} {{ val }}" /></td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% endfor %}
-
+<div class="content-div content-new element-highlight">
+    <form>
+        {% for title, type in [('Source', 'src'), ('Destination', 'dst')] %}
             <table>
                 <tr>
-                    <td><p class="text-title">Options</p></td>
+                    <td><p class="text-title">{{ title }}</p></td>
                 </tr>
                 <tr>
                     <td class="title-td title-td-2">
-                        <span class="text-normal">exclusions</span>
-                    </td>
-                    <td><input class="input-text" type="text" name="exclusions" placeholder="list of exclusions separated by commas" /></td>
-                </tr>
-                <tr>
-                    <td class="title-td title-td-2">
-                        <span class="text-normal">delete</span>
-                    </td>
-                    <td><input type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
-                </tr>
-                <tr>
-                    <td class="title-td title-td-2">
-                        <span class="text-normal">recurrence</span>
+                        <span class="text-normal">user</span>
                     </td>
                     <td>
-                        <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="12" />
+                        <select title="user" name="{{ type }}_user">
+                            <option value="">any</option>
+                            {% for user in session.users %}
+                                <option value="{{ user._id }}">{{ user.name }}</option>
+                            {% endfor %}
+                        </select>
                     </td>
                 </tr>
-                <tr>
-                    <td class="title-td title-td-2">
-                        <span class="text-normal">time range</span>
-                    </td>
-                    <td>
-                        <input type="number" name="hour_begin" title="hour before which the sync cant start" size="2" min="-1" max="23" value="-1" /> to
-                        <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="-1" />
-                    </td>
-                </tr>
-            </table>
-        </form>
-    </div>
 
-    <div class="element-new-actions">
+                {% for val in ['hwaddr', 'uuid', 'path'] %}
+                    <tr>
+                        <td class="title-td title-td-2">
+                            <span class="text-normal">{{ val }}</span>
+                        </td>
+                        <td><input class="input-text" type="text" name="{{ type }}_{{ val }}" placeholder="{% if type == 'src' %}source{% else %}destination{% endif %} {{ val }}" /></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+
+        <table>
+            <tr>
+                <td><p class="text-title">Options</p></td>
+            </tr>
+            <tr>
+                <td class="title-td title-td-2">
+                    <span class="text-normal">exclusions</span>
+                </td>
+                <td><input class="input-text" type="text" name="exclusions" placeholder="list of exclusions separated by commas" /></td>
+            </tr>
+            <tr>
+                <td class="title-td title-td-2">
+                    <span class="text-normal">delete</span>
+                </td>
+                <td><input type="checkbox" name="delete" checked="checked" title="delete removed files at destination" /></td>
+            </tr>
+            <tr>
+                <td class="title-td title-td-2">
+                    <span class="text-normal">recurrence</span>
+                </td>
+                <td>
+                    <input type="number" name="recurrence" title="sync recurrence (hours)" size="2" min="2" max="168" value="12" />
+                </td>
+            </tr>
+            <tr>
+                <td class="title-td title-td-2">
+                    <span class="text-normal">time range</span>
+                </td>
+                <td>
+                    <input type="number" name="hour_begin" title="hour before which the sync cant start" size="2" min="-1" max="23" value="-1" /> to
+                    <input type="number" name="hour_end" title="hour after which the sync cant start" size="2" min="-1" max="23" value="-1" />
+                </td>
+            </tr>
+        </table>
+    </form>
+
+    <div class="element-actions-new">
         <a href=""><img class="img-button" src="{{ url_for('static', filename='img/add.png') }}" alt="add"></img></a>
     </div>
 </div>

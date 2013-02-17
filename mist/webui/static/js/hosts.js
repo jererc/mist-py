@@ -1,27 +1,13 @@
-var showDelays = {};
-
-
-function toggleElement(element, direction, delay) {
-    var id = $(element).attr('data-id');
-    clearTimeout(showDelays[id]);
-    var info = $(element).find('.element-details');
-    showDelays[id] = setTimeout(function () {
-        if (direction == 'up') {
-            info.slideUp('slow');
-        } else {
-            info.slideDown('fast');
-        }
-    }, delay);
-};
-
 function initActions() {
     $('.content-element').mouseenter(function() {
         $(this).addClass('element-highlight');
-        toggleElement(this, 'down', 600);
+        toggleElement($(this).attr('data-id'),
+                $(this).find('.element-details'), 'down', 600);
     });
     $('.content-element').mouseleave(function() {
         $(this).removeClass('element-highlight');
-        toggleElement(this, 'up', 2000);
+        toggleElement($(this).attr('data-id'),
+                $(this).find('.element-details'), 'up', 2000);
     });
 
     $('.img-button[alt="more"]').click(function() {
