@@ -1,23 +1,11 @@
-from datetime import timedelta
-
-
 PACKAGE_NAME = 'mist'
-
-SYNC_TIMEOUT = 3600 * 6     # seconds
-AUTOMOUNT = True
-DELTA_HOST_ALIVE = timedelta(days=7)
-DELTA_FAILED_USERNAME = timedelta(hours=6)
-DELTA_HOST_UPDATE = timedelta(minutes=10)
-
-# Db
 DB_NAME = 'mist'
-
-WEBUI_PORT = 8003
+API_PORT = 9003
 
 # Logging
 LOG_FILE = '/home/user/log/mist.log'
 LOG_FORMAT = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-LOG_SIZE = 100000   # Bytes
+LOG_SIZE = 100000   # bytes
 LOG_COUNT = 100
 
 

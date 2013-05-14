@@ -6,11 +6,10 @@ from transfer import Transfer
 
 from systools.system import loop, timer
 
-from mist import settings, get_factory, get_host, Sync
+from mist import Sync, Settings, settings, get_factory, get_host
 
 
 WORKERS_LIMIT = 4
-DELTA_RETRY = timedelta(minutes=30)
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,8 @@ def _get_abs_path(host, uuid, path, retries=1):
     path_uuid = disk.get('path')
 
     if not path_uuid or not host.exists(path_uuid):
-        if not settings.AUTOMOUNT or retries <= 0:
+        automount = Settings.get_settings('sync')['automount']
+        if not automount or retries <= 0:
             logger.info('failed to get path for uuid %s on %s' % (uuid, host.host))
             return
         dev = disk.get('dev')
@@ -61,7 +61,8 @@ def get_uris(**kwargs):
     return res
 
 def set_retry(sync):
-    sync['reserved'] = datetime.utcnow() + DELTA_RETRY
+    delta = Settings.get_settings('sync')['sync_retry_delta']
+    sync['reserved'] = datetime.utcnow() + timedelta(minutes=delta)
     Sync.save(sync, safe=True)
 
 @timer(30)
@@ -103,12 +104,13 @@ def validate_sync(sync):
 
 @loop(60)
 def run():
+    sync_timeout = Settings.get_settings('sync')['sync_timeout']
     for sync in Sync.find({'$or': [
-            {'reserved': {'$exists': False}},
+            {'reserved': None},
             {'reserved': {'$lt': datetime.utcnow()}},
             ]}):
         if not validate_sync(sync):
             continue
         target = '%s.workers.sync.process_sync' % settings.PACKAGE_NAME
         get_factory().add(target=target, args=(sync['_id'],),
-                timeout=settings.SYNC_TIMEOUT)
+                timeout=sync_timeout)

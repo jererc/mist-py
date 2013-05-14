@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from copy import deepcopy
 import logging
 
@@ -7,7 +7,7 @@ from systools.system import loop, timeout, timer
 from systools.network.ssh import Host as SshHost
 from systools.network.ssh import TimeoutError
 
-from mist import settings, get_factory, User, Host
+from mist import User, Host, Settings, settings, get_factory
 
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,8 @@ def _update_users(users, info):
 @timeout(minutes=10)
 @timer(30)
 def update_host(host):
+    settings_ = Settings.get_settings('host')
+
     res = Host.find_one({'host': host})
     if not res:
         return
@@ -65,7 +67,8 @@ def update_host(host):
         if port_service and port != port_service:
             continue
         if not user.get('logged') and user.get('failed'):
-            if user['failed'] > datetime.utcnow() - settings.DELTA_FAILED_USERNAME:
+            delta = timedelta(minutes=settings_['failed_user_timeout'])
+            if user['failed'] > datetime.utcnow() - delta:
                 continue
 
         try:
@@ -91,7 +94,8 @@ def update_host(host):
         port_service = port
 
         updated = res.get('updated')
-        if not updated or updated < datetime.utcnow() - settings.DELTA_HOST_UPDATE:
+        delta = timedelta(minutes=settings_['host_update_delta'])
+        if not updated or updated < datetime.utcnow() - delta:
             res.update({
                 'hostname': session.get_hostname(),
                 'ifconfig': session.get_ifconfig(),
@@ -112,7 +116,8 @@ def get_worker(host):
 @timeout(minutes=5)
 @timer(30)
 def run():
-    hosts = get_hosts()
+    settings_ = Settings.get_settings('host')
+    hosts = get_hosts(settings_['ip_range'])
     if hosts is None:
         logger.debug('failed to find hosts')
         return
@@ -128,8 +133,8 @@ def run():
 
     Host.update({'host': {'$nin': hosts}},
             {'$set': {'alive': False}}, safe=True, multi=True)
-    Host.remove({'seen': {'$lt': datetime.utcnow() - settings.DELTA_HOST_ALIVE}},
-            safe=True)
+    delta = timedelta(minutes=settings_['host_timeout'])
+    Host.remove({'seen': {'$lt': datetime.utcnow() - delta}}, safe=True)
 
     for res in Host.find({'alive': False}):
         factory.remove(**get_worker(res['host']))

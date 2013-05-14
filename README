@@ -1,4 +1,1 @@
-Data sync between devices.
-
-Start the daemon and webui:
-./mist/run.py
+Data sync between devices

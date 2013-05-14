@@ -3,28 +3,21 @@ import sys
 import logging
 from logging.handlers import RotatingFileHandler
 
-from systools.system import popen, get_package_modules
+from systools.system import check_commands, get_package_modules
 
 from tracy import DbHandler
 
 from mist import settings, get_factory
 
 
-WORKERS_DIR = 'workers'
 CMDS = ['fping', 'rsync']
+WORKERS_DIR = 'workers'
 
+logging.basicConfig(level=logging.DEBUG)
 
-def check_requirements():
-    res = True
-    for cmd in CMDS:
-        if popen('which %s' % cmd)[-1] != 0:
-            res = False
-            print '%s is missing' % cmd
-
-    return res
 
 def main():
-    if not check_requirements():
+    if not check_commands(CMDS):
         sys.exit(1)
 
     factory = get_factory()
