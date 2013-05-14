@@ -17,7 +17,7 @@ from mist.apps import app
 logger = logging.getLogger(__name__)
 
 
-class SyncException(Exception): pass
+class SyncError(Exception): pass
 
 
 @app.route('/status', methods=['GET'])
@@ -175,16 +175,16 @@ def remove_user():
 #
 def _get_sync(data):
     if not data.get('src'):
-        raise SyncException('missing src')
+        raise SyncError('missing src')
     if not data.get('dst'):
-        raise SyncException('missing dst')
+        raise SyncError('missing dst')
     if not data.get('recurrence'):
-        raise SyncException('missing recurrence')
+        raise SyncError('missing recurrence')
 
     for type in ('src', 'dst'):
         for key in ('user', 'path'):
             if not data[type].get(key):
-                raise SyncException('missing %s %s' % (type, key))
+                raise SyncError('missing %s %s' % (type, key))
 
     res = {
         'src': data['src'],
@@ -207,7 +207,7 @@ def create_sync():
     data = request.json
     try:
         sync = _get_sync(data)
-    except SyncException, e:
+    except SyncError, e:
         return jsonify(error=str(e))
     if Sync.find_one(sync):
         return jsonify(error='sync already exists')
@@ -253,7 +253,7 @@ def update_sync():
         return jsonify(error='missing id')
     try:
         sync = _get_sync(data)
-    except SyncException, e:
+    except SyncError, e:
         return jsonify(error=str(e))
     Sync.update({'_id': ObjectId(data['_id'])},
             {'$set': sync}, safe=True)
