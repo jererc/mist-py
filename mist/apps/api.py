@@ -236,7 +236,7 @@ def list_syncs():
         res['transfer'] = transfer or {}
         if not transfer:
             res['status'] = 'pending'
-        elif transfer['finished'] and transfer['finished'] > now - timedelta(hours=res['recurrence']):
+        elif transfer['finished'] and transfer['finished'] > now - timedelta(hours=res['recurrence'] + 24):
             res['status'] = 'ok'
         else:
             res['status'] = 'queued'
