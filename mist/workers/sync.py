@@ -99,8 +99,7 @@ def process_sync(sync_id):
 def validate_sync(sync):
     begin = sync.get('hour_begin') or 0
     end = sync.get('hour_end') or 24
-    if begin <= datetime.now().hour < end:
-        return True
+    return begin <= datetime.now().hour < end
 
 @loop(60)
 def run():
