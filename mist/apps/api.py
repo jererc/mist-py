@@ -34,8 +34,10 @@ def check_status():
 def list_hosts():
     items = []
     for res in Host.find(sort=[('seen', DESCENDING)]):
+        res['all_users'] = []
         res['logged_users'] = []
         for user in res.get('users', []):
+            res['all_users'].append(user['_id'])
             if user.get('logged'):
                 user_ = get_user(user['_id'])
                 if user_:
@@ -113,8 +115,9 @@ def list_users():
         if not res.get('paths'):
             res['paths'] = {}
 
-        logged = []
+        res['status'] = False
         res['hosts'] = []
+        logged = []
         for host in Host.find({'users': {'$elemMatch': {
                 '_id': res['_id'],
                 'logged': {'$exists': True},
@@ -123,13 +126,10 @@ def list_users():
             for user in host['users']:
                 if user['_id'] == res['_id']:
                     logged.append(user['logged'])
+                    if host['alive']:
+                        res['status'] = True
 
         res['logged'] = max(logged) if logged else None
-        if res['logged'] and res['logged'] > now - timedelta(minutes=30):
-            res['status'] = True
-        else:
-            res['status'] = False
-
         items.append(res)
 
     return serialize({'result': items})
@@ -155,6 +155,7 @@ def update_user():
         'password': data['password'],
         'port': int(data['port']),
         'paths': data.get('paths', {}),
+        'email': data.get('email'),
         }
     User.update({'_id': ObjectId(data['_id'])},
             {'$set': doc}, safe=True)
@@ -286,7 +287,7 @@ def remove_sync():
 @crossdomain(origin='*')
 def list_settings():
     settings = {}
-    for section in ('host', 'sync'):
+    for section in ('host', 'sync', 'email'):
         settings[section] = Settings.get_settings(section)
     return serialize({'result': settings})
 

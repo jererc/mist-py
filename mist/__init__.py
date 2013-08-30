@@ -102,7 +102,9 @@ def get_host(**kwargs):
     if kwargs.get('uuid'):
         spec['disks'] = {'$elemMatch': {'uuid': kwargs['uuid']}}
 
+    count = 0
     for host in Host.find(spec):
+        count += 1
         for user in host['users']:
             if not user.get('logged'):
                 continue
@@ -118,3 +120,6 @@ def get_host(**kwargs):
                 return client
             except Exception, e:
                 logger.info('failed to connect to %s@%s:%s: %s' % (user_['username'], host['host'], port, str(e)))
+
+    if (kwargs.get('uuid') or kwargs.get('hwaddr')) and not count:
+        logger.info('no host matching %s' % kwargs)
