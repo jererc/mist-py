@@ -187,6 +187,9 @@ def _get_sync(data):
             if not data[type].get(key):
                 raise SyncError('missing %s %s' % (type, key))
 
+    if ',' in data['src']['path']:
+        data['src']['path'] = [p.strip() for p in data['src']['path'].split(',')]
+
     res = {
         'src': data['src'],
         'dst': data['dst'],
@@ -216,12 +219,22 @@ def create_sync():
     return jsonify(result=True)
 
 def _get_params_str(params):
+    base = ''
+
     user_id = params.get('user')
     if user_id:
         user = get_user(user_id)
         if user:
-            return user['name']
-    return params.get('hwaddr') or params.get('uuid')
+            base = user['name']
+    if not base:
+        base = params.get('hwaddr') or params.get('uuid')
+
+    if isinstance(params['path'], (tuple, list)):
+        path = ','.join(params['path'])
+    else:
+        path = params['path']
+
+    return '%s:%s' % (base, path)
 
 @app.route('/sync/list', methods=['GET'])
 @crossdomain(origin='*')
