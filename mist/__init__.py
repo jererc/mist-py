@@ -119,7 +119,7 @@ def get_host(**kwargs):
                 client.hostname = host['hostname']
                 return client
             except Exception, e:
-                logger.info('failed to connect to %s@%s:%s: %s' % (user_['username'], host['host'], port, str(e)))
+                logger.info('failed to connect to %s@%s:%s: %s', user_['username'], host['host'], port, str(e))
 
     if (kwargs.get('uuid') or kwargs.get('hwaddr')) and not count:
-        logger.info('no host matching %s' % kwargs)
+        logger.info('no host matching %s', kwargs)

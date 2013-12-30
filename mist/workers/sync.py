@@ -29,14 +29,14 @@ def _get_abs_path(host, uuid, path, retries=1):
     if not path_uuid or not host.exists(path_uuid):
         automount = Settings.get_settings('sync')['automount']
         if not automount or retries <= 0:
-            logger.info('failed to get path for uuid %s on %s' % (uuid, host.host))
+            logger.info('failed to get path for uuid %s on %s', uuid, host.host)
             return
         dev = disk.get('dev')
         if not dev:
-            logger.info('failed to get device for uuid %s on %s' % (uuid, host.host))
+            logger.info('failed to get device for uuid %s on %s', uuid, host.host)
             return
         if not host.mount(dev):
-            logger.info('failed to mount device %s (uuid %s) on %s' % (dev, uuid, host.host))
+            logger.info('failed to mount device %s (uuid %s) on %s', dev, uuid, host.host)
             return
         return _get_abs_path(host, uuid, path, retries=retries-1)
 
@@ -89,7 +89,7 @@ def process_sync(sync_id):
         }
     transfer_id = Transfer.add(src, dst,
             sync_id=sync['_id'], parameters=parameters)
-    logger.info('added transfer %s to %s' % (src, dst))
+    logger.info('added transfer %s to %s', src, dst)
 
     sync['transfer_id'] = transfer_id
     sync['processed'] = datetime.utcnow()

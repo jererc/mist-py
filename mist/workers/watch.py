@@ -57,7 +57,7 @@ def run():
         try:
             server.send('mist', user['email'], subject, body)
         except Exception, e:
-            logger.error('failed to send email to %s: %s' % (user['email'], str(e)))
+            logger.error('failed to send email to %s: %s', user['email'], str(e))
             continue
 
         User.update({'_id': user['_id']},
