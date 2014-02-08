@@ -87,8 +87,9 @@ def process_sync(sync_id):
         'exclusions': sync.get('exclusions'),
         'delete': sync.get('delete'),
         }
-    transfer_id = Transfer.add(src, dst,
-            sync_id=sync['_id'], parameters=parameters)
+    is_mount = (sync['dst'].get('uuid') or sync['src'].get('uuid')) is not None
+    transfer_id = Transfer.add(src, dst, sync_id=sync['_id'],
+            parameters=parameters, is_mount=is_mount)
     logger.info('added transfer %s to %s', src, dst)
 
     sync['transfer_id'] = transfer_id
@@ -97,9 +98,14 @@ def process_sync(sync_id):
     Sync.save(sync, safe=True)
 
 def validate_sync(sync):
-    begin = sync.get('hour_begin') or 0
-    end = sync.get('hour_end') or 24
-    return begin <= datetime.now().hour < end
+    hour = datetime.now().hour
+    begin = sync.get('hour_begin')
+    if begin is not None and hour < begin:
+        return False
+    end = sync.get('hour_end')
+    if end is not None and hour >= end:
+        return False
+    return True
 
 @loop(60)
 def run():

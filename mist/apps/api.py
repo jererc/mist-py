@@ -109,7 +109,6 @@ def create_user():
 @app.route('/user/list', methods=['GET'])
 @crossdomain(origin='*')
 def list_users():
-    now = datetime.utcnow()
     items = []
     for res in User.find(sort=[('name', ASCENDING)]):
         if not res.get('paths'):
